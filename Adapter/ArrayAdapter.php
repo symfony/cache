@@ -42,6 +42,9 @@ class ArrayAdapter implements AdapterInterface, LoggerAwareInterface
                 $item->value = $value;
                 $item->isHit = $isHit;
                 $item->defaultLifetime = $defaultLifetime;
+		
+		if ($defaultLifetime>0)
+		    $item->expiry = time() + $defaultLifetime;
 
                 return $item;
             },
