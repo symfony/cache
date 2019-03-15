@@ -34,4 +34,6 @@ class MemcachedAdapter extends AbstractAdapter
     {
         $this->init($client, $namespace, $defaultLifetime, $marshaller);
     }
+
+
 }

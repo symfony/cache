@@ -70,6 +70,7 @@ class DefaultMarshaller implements MarshallerInterface
             return null;
         }
         $unserializeCallbackHandler = ini_set('unserialize_callback_func', __CLASS__.'::handleUnserializeCallback');
+
         try {
             if (':' === ($value[1] ?? ':')) {
                 if (false !== $value = unserialize($value)) {
