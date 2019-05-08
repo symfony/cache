@@ -146,7 +146,7 @@ trait RedisTrait
             throw new InvalidArgumentException(sprintf('Invalid Redis DSN: %s', $dsn));
         }
 
-        $params += $query + $options + self::$defaultConnectionOptions;
+        $params += self::$defaultConnectionOptions + $options + $query;
 
         if (null === $params['class'] && \extension_loaded('redis')) {
             $class = $params['redis_cluster'] ? \RedisCluster::class : (1 < \count($hosts) ? \RedisArray::class : \Redis::class);
