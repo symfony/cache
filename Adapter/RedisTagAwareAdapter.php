@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Cache\Adapter;
 
+use Predis\ClientInterface;
+use Predis\Connection\Aggregate\ReplicationInterface;
 use Predis\Connection\Aggregate\ClusterInterface;
 use Predis\Connection\Aggregate\PredisCluster;
 use Predis\Response\Status;
@@ -283,6 +285,11 @@ EOLUA;
         }
 
         foreach ($this->getHosts() as $host) {
+            if ($host instanceof ClientInterface && $host->getConnection() instanceof ReplicationInterface && \method_exists($host, 'getClientFor')) {
+                // As discussed (https://github.com/predis/predis/issues/598#issuecomment-671876712) predis won't allow any
+                // Server commands. In future releases they may want to change that behavior.
+                $host = $host->getClientFor('master');
+            }
             $info = $host->info('Memory');
             $info = $info['Memory'] ?? $info;
 

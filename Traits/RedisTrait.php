@@ -11,7 +11,9 @@
 
 namespace Symfony\Component\Cache\Traits;
 
+use Predis\ClientInterface;
 use Predis\Command\Redis\UNLINK;
+use Predis\Connection\Aggregate\ReplicationInterface;
 use Predis\Connection\Aggregate\ClusterInterface;
 use Predis\Connection\Aggregate\RedisCluster;
 use Predis\Response\Status;
@@ -385,6 +387,11 @@ trait RedisTrait
                 continue;
             }
 
+            if ($host instanceof ClientInterface && $host->getConnection() instanceof ReplicationInterface && \method_exists($host, 'getClientFor')) {
+                // As discussed (https://github.com/predis/predis/issues/598#issuecomment-671876712) predis won't allow any
+                // Server commands. In future releases they may want to change that behavior.
+                $host = $host->getClientFor('master');
+            }
             $info = $host->info('Server');
             $info = $info['Server'] ?? $info;
 
