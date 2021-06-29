@@ -110,6 +110,7 @@ class RedisTagAwareAdapter extends AbstractTagAwareAdapter
             foreach ($addTagData as $tagId => $ids) {
                 if (!$failed || $ids = array_diff($ids, $failed)) {
                     yield 'sAdd' => array_merge([$tagId], $ids);
+                    yield 'expire' => [$tagId, 0 >= $lifetime ? self::DEFAULT_CACHE_TTL : $lifetime,];
                 }
             }
 
