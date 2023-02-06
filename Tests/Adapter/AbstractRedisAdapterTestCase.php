@@ -15,7 +15,7 @@ use PHPUnit\Framework\SkippedTestSuiteError;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
-abstract class AbstractRedisAdapterTest extends AdapterTestCase
+abstract class AbstractRedisAdapterTestCase extends AdapterTestCase
 {
     protected $skippedTests = [
         'testExpiration' => 'Testing expiration slows down the test suite',
