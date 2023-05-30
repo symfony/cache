@@ -19,6 +19,7 @@ use Symfony\Component\Cache\PruneableInterface;
 use Symfony\Component\Cache\ResettableInterface;
 use Symfony\Component\Cache\Traits\ContractsTrait;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
 /**
@@ -29,7 +30,7 @@ use Symfony\Contracts\Service\ResetInterface;
  *
  * @author Kévin Dunglas <dunglas@gmail.com>
  */
-class ChainAdapter implements AdapterInterface, CacheInterface, PruneableInterface, ResettableInterface
+class ChainAdapter implements AdapterInterface, CacheInterface, PruneableInterface, ResettableInterface, TagAwareCacheInterface, TagAwareAdapterInterface
 {
     use ContractsTrait;
 
@@ -280,10 +281,24 @@ class ChainAdapter implements AdapterInterface, CacheInterface, PruneableInterfa
         return $pruned;
     }
 
+    public function invalidateTags(array $tags): bool
+    {
+        $invalidated = true;
+        $i = $this->adapterCount;
+
+        while ($i--) {
+            if ($this->adapters[$i] instanceof TagAwareAdapterInterface || $this->adapters[$i] instanceof TagAwareCacheInterface) {
+                $invalidated = $this->adapters[$i]->invalidateTags($tags) && $invalidated;
+            }
+        }
+
+        return $invalidated;
+    }
+
     /**
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         foreach ($this->adapters as $adapter) {
             if ($adapter instanceof ResetInterface) {
