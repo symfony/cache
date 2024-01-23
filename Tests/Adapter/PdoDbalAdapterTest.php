@@ -18,21 +18,28 @@ use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\Schema;
+use PHPUnit\Framework\SkippedTestSuiteError;
 use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
+use Symfony\Component\Cache\Adapter\PdoAdapter;
 use Symfony\Component\Cache\Tests\Fixtures\DriverWrapper;
 
 /**
- * @requires extension pdo_sqlite
- *
  * @group time-sensitive
+ * @group legacy
  */
-class DoctrineDbalAdapterTest extends AdapterTestCase
+class PdoDbalAdapterTest extends AdapterTestCase
 {
+    use ExpectDeprecationTrait;
+
     protected static $dbFile;
 
     public static function setUpBeforeClass(): void
     {
+        if (!\extension_loaded('pdo_sqlite')) {
+            throw new SkippedTestSuiteError('Extension pdo_sqlite required.');
+        }
+
         self::$dbFile = tempnam(sys_get_temp_dir(), 'sf_sqlite_cache');
     }
 
@@ -43,12 +50,17 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
 
     public function createCachePool(int $defaultLifetime = 0): CacheItemPoolInterface
     {
-        return new DoctrineDbalAdapter(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig()), '', $defaultLifetime);
+        $this->expectDeprecation('Since symfony/cache 5.4: Usage of a DBAL Connection with "Symfony\Component\Cache\Adapter\PdoAdapter" is deprecated and will be removed in symfony 6.0. Use "Symfony\Component\Cache\Adapter\DoctrineDbalAdapter" instead.');
+        $config = $this->getDbalConfig();
+
+        return new PdoAdapter(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $config), '', $defaultLifetime);
     }
 
     public function testConfigureSchemaDecoratedDbalDriver()
     {
-        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
+        $this->expectDeprecation('Since symfony/cache 5.4: Usage of a DBAL Connection with "Symfony\Component\Cache\Adapter\PdoAdapter" is deprecated and will be removed in symfony 6.0. Use "Symfony\Component\Cache\Adapter\DoctrineDbalAdapter" instead.');
+        $config = $this->getDbalConfig();
+        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $config);
         if (!interface_exists(Middleware::class)) {
             $this->markTestSkipped('doctrine/dbal v2 does not support custom drivers using middleware');
         }
@@ -58,12 +70,11 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
             ->method('wrap')
             ->willReturn(new DriverWrapper($connection->getDriver()));
 
-        $config = $this->getDbalConfig();
         $config->setMiddlewares([$middleware]);
 
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $config);
 
-        $adapter = new DoctrineDbalAdapter($connection);
+        $adapter = new PdoAdapter($connection);
         $adapter->createTable();
 
         $item = $adapter->getItem('key');
@@ -73,11 +84,13 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
 
     public function testConfigureSchema()
     {
-        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
+        $this->expectDeprecation('Since symfony/cache 5.4: Usage of a DBAL Connection with "Symfony\Component\Cache\Adapter\PdoAdapter" is deprecated and will be removed in symfony 6.0. Use "Symfony\Component\Cache\Adapter\DoctrineDbalAdapter" instead.');
+        $config = $this->getDbalConfig();
+        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $config);
         $schema = new Schema();
 
-        $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, fn () => true);
+        $adapter = new PdoAdapter($connection);
+        $adapter->configureSchema($schema, $connection);
         $this->assertTrue($schema->hasTable('cache_items'));
     }
 
@@ -87,29 +100,33 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema = new Schema();
 
         $adapter = $this->createCachePool();
-        $adapter->configureSchema($schema, $otherConnection, fn () => false);
+        $adapter->configureSchema($schema, $otherConnection);
         $this->assertFalse($schema->hasTable('cache_items'));
     }
 
     public function testConfigureSchemaTableExists()
     {
-        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
+        $this->expectDeprecation('Since symfony/cache 5.4: Usage of a DBAL Connection with "Symfony\Component\Cache\Adapter\PdoAdapter" is deprecated and will be removed in symfony 6.0. Use "Symfony\Component\Cache\Adapter\DoctrineDbalAdapter" instead.');
+        $config = $this->getDbalConfig();
+        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $config);
         $schema = new Schema();
         $schema->createTable('cache_items');
 
-        $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, fn () => true);
+        $adapter = new PdoAdapter($connection);
+        $adapter->configureSchema($schema, $connection);
         $table = $schema->getTable('cache_items');
         $this->assertEmpty($table->getColumns(), 'The table was not overwritten');
     }
 
     /**
-     * @dataProvider provideDsnWithSQLite
+     * @dataProvider provideDsn
      */
-    public function testDsnWithSQLite(string $dsn, ?string $file = null)
+    public function testDsn(string $dsn, ?string $file = null)
     {
+        $this->expectDeprecation('Since symfony/cache 5.4: Usage of a DBAL Connection with "Symfony\Component\Cache\Adapter\PdoAdapter" is deprecated and will be removed in symfony 6.0. Use "Symfony\Component\Cache\Adapter\DoctrineDbalAdapter" instead.');
         try {
-            $pool = new DoctrineDbalAdapter($dsn);
+            $pool = new PdoAdapter($dsn);
+            $pool->createTable();
 
             $item = $pool->getItem('key');
             $item->set('value');
@@ -121,44 +138,25 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
     }
 
-    public static function provideDsnWithSQLite()
+    public static function provideDsn()
     {
         $dbFile = tempnam(sys_get_temp_dir(), 'sf_sqlite_cache');
-        yield 'SQLite file' => ['sqlite://localhost/'.$dbFile.'1', $dbFile.'1'];
-        yield 'SQLite3 file' => ['sqlite3:///'.$dbFile.'3', $dbFile.'3'];
-        yield 'SQLite in memory' => ['sqlite://localhost/:memory:'];
+        yield ['sqlite://localhost/'.$dbFile.'1', $dbFile.'1'];
+        yield ['sqlite3:///'.$dbFile.'3', $dbFile.'3'];
+        yield ['sqlite://localhost/:memory:'];
     }
 
-    /**
-     * @requires extension pdo_pgsql
-     *
-     * @group integration
-     */
-    public function testDsnWithPostgreSQL()
+    protected function isPruned(PdoAdapter $cache, string $name): bool
     {
-        if (!$host = getenv('POSTGRES_HOST')) {
-            $this->markTestSkipped('Missing POSTGRES_HOST env variable');
-        }
+        $dbalAdapterProp = (new \ReflectionObject($cache))->getProperty('dbalAdapter');
+        $dbalAdapterProp->setAccessible(true);
+        $dbalAdapter = $dbalAdapterProp->getValue($cache);
 
-        try {
-            $pool = new DoctrineDbalAdapter('pgsql://postgres:password@'.$host);
-
-            $item = $pool->getItem('key');
-            $item->set('value');
-            $this->assertTrue($pool->save($item));
-        } finally {
-            $pdo = new \PDO('pgsql:host='.$host.';user=postgres;password=password');
-            $pdo->exec('DROP TABLE IF EXISTS cache_items');
-        }
-    }
-
-    protected function isPruned(DoctrineDbalAdapter $cache, string $name): bool
-    {
-        $o = new \ReflectionObject($cache);
-        $connProp = $o->getProperty('conn');
+        $connProp = (new \ReflectionObject($dbalAdapter))->getProperty('conn');
+        $connProp->setAccessible(true);
 
         /** @var Connection $conn */
-        $conn = $connProp->getValue($cache);
+        $conn = $connProp->getValue($dbalAdapter);
         $result = $conn->executeQuery('SELECT 1 FROM cache_items WHERE item_id LIKE ?', [sprintf('%%%s', $name)]);
 
         return 1 !== (int) $result->fetchOne();
@@ -175,7 +173,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         return $connection;
     }
 
-    private function getDbalConfig()
+    private function getDbalConfig(): Configuration
     {
         $config = new Configuration();
         if (class_exists(DefaultSchemaManagerFactory::class)) {
