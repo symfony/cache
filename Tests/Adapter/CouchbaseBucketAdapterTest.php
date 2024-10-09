@@ -11,23 +11,23 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\CouchbaseBucketAdapter;
 
 /**
- * @requires extension couchbase <3.0.0
- * @requires extension couchbase >=2.6.0
- *
- * @group legacy integration
- *
  * @author Antonio Jose Cerezo Aranda <aj.cerezo@gmail.com>
  */
+#[Group('integration')]
+#[Group('legacy')]
+#[IgnoreDeprecations]
+#[RequiresPhpExtension('couchbase', '<3.0.0')]
+#[RequiresPhpExtension('couchbase', '>=2.6.0')]
 class CouchbaseBucketAdapterTest extends AdapterTestCase
 {
-    use ExpectUserDeprecationMessageTrait;
-
     protected $skippedTests = [
         'testClearPrefix' => 'Couchbase cannot clear by prefix',
     ];
