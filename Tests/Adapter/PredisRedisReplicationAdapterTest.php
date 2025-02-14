@@ -24,6 +24,6 @@ class PredisRedisReplicationAdapterTest extends AbstractRedisAdapterTestCase
             self::markTestSkipped('REDIS_REPLICATION_HOSTS env var is not defined.');
         }
 
-        self::$redis = RedisAdapter::createConnection('redis:?host['.str_replace(' ', ']&host[', $hosts).'][alias]=master', ['class' => \Predis\Client::class, 'prefix' => 'prefix_']);
+        self::$redis = RedisAdapter::createConnection('redis:?host['.str_replace(' ', ']&host[', $hosts).'][role]=master', ['replication' => 'predis', 'class' => \Predis\Client::class, 'prefix' => 'prefix_']);
     }
 }
