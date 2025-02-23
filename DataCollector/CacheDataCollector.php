@@ -38,15 +38,7 @@ class CacheDataCollector extends DataCollector implements LateDataCollectorInter
 
     public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
     {
-        $empty = ['calls' => [], 'adapters' => [], 'config' => [], 'options' => [], 'statistics' => []];
-        $this->data = ['instances' => $empty, 'total' => $empty];
-        foreach ($this->instances as $name => $instance) {
-            $this->data['instances']['calls'][$name] = $instance->getCalls();
-            $this->data['instances']['adapters'][$name] = get_debug_type($instance->getPool());
-        }
-
-        $this->data['instances']['statistics'] = $this->calculateStatistics();
-        $this->data['total']['statistics'] = $this->calculateTotalStatistics();
+        $this->lateCollect();
     }
 
     public function reset(): void
@@ -59,7 +51,15 @@ class CacheDataCollector extends DataCollector implements LateDataCollectorInter
 
     public function lateCollect(): void
     {
-        $this->data['instances']['calls'] = $this->cloneVar($this->data['instances']['calls']);
+        $empty = ['calls' => [], 'adapters' => [], 'config' => [], 'options' => [], 'statistics' => []];
+        $this->data = ['instances' => $empty, 'total' => $empty];
+        foreach ($this->instances as $name => $instance) {
+            $this->data['instances']['calls'][$name] = $instance->getCalls();
+            $this->data['instances']['adapters'][$name] = get_debug_type($instance->getPool());
+        }
+
+        $this->data['instances']['statistics'] = $this->calculateStatistics();
+        $this->data['total']['statistics'] = $this->calculateTotalStatistics();
     }
 
     public function getName(): string
