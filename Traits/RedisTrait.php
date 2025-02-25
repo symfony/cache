@@ -21,6 +21,7 @@ use Predis\Connection\Replication\ReplicationInterface as Predis2ReplicationInte
 use Predis\Response\ErrorInterface;
 use Predis\Response\Status;
 use Relay\Relay;
+use Relay\Cluster as RelayCluster;
 use Relay\Sentinel;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
@@ -41,19 +42,21 @@ trait RedisTrait
         'persistent_id' => null,
         'timeout' => 30,
         'read_timeout' => 0,
+        'command_timeout' => 0,
         'retry_interval' => 0,
         'tcp_keepalive' => 0,
         'lazy' => null,
         'redis_cluster' => false,
+        'relay_cluster_context' => [],
         'redis_sentinel' => null,
         'dbindex' => 0,
         'failover' => 'none',
         'ssl' => null, // see https://php.net/context.ssl
     ];
-    private \Redis|Relay|\RedisArray|\RedisCluster|\Predis\ClientInterface $redis;
+    private \Redis|Relay|RelayCluster|\RedisArray|\RedisCluster|\Predis\ClientInterface $redis;
     private MarshallerInterface $marshaller;
 
-    private function init(\Redis|Relay|\RedisArray|\RedisCluster|\Predis\ClientInterface $redis, string $namespace, int $defaultLifetime, ?MarshallerInterface $marshaller): void
+    private function init(\Redis|Relay|RelayCluster|\RedisArray|\RedisCluster|\Predis\ClientInterface $redis, string $namespace, int $defaultLifetime, ?MarshallerInterface $marshaller): void
     {
         parent::__construct($namespace, $defaultLifetime);
 
@@ -85,7 +88,7 @@ trait RedisTrait
      *
      * @throws InvalidArgumentException when the DSN is invalid
      */
-    public static function createConnection(#[\SensitiveParameter] string $dsn, array $options = []): \Redis|\RedisArray|\RedisCluster|\Predis\ClientInterface|Relay
+    public static function createConnection(#[\SensitiveParameter] string $dsn, array $options = []): \Redis|\RedisArray|\RedisCluster|\Predis\ClientInterface|Relay|RelayCluster
     {
         if (str_starts_with($dsn, 'redis:')) {
             $scheme = 'redis';
@@ -187,14 +190,18 @@ trait RedisTrait
         if (isset($params['lazy'])) {
             $params['lazy'] = filter_var($params['lazy'], \FILTER_VALIDATE_BOOLEAN);
         }
-        $params['redis_cluster'] = filter_var($params['redis_cluster'], \FILTER_VALIDATE_BOOLEAN);
 
+        $params['redis_cluster'] = filter_var($params['redis_cluster'], \FILTER_VALIDATE_BOOLEAN);
         if ($params['redis_cluster'] && isset($params['redis_sentinel'])) {
             throw new InvalidArgumentException('Cannot use both "redis_cluster" and "redis_sentinel" at the same time.');
         }
 
         $class = $params['class'] ?? match (true) {
-            $params['redis_cluster'] => \extension_loaded('redis') ? \RedisCluster::class : \Predis\Client::class,
+            $params['redis_cluster'] => match (true) {
+                \extension_loaded('redis') => \RedisCluster::class,
+                \extension_loaded('relay') => RelayCluster::class,
+                default => \Predis\Client::class,
+            },
             isset($params['redis_sentinel']) => match (true) {
                 \extension_loaded('redis') => \Redis::class,
                 \extension_loaded('relay') => Relay::class,
@@ -348,6 +355,66 @@ trait RedisTrait
             if (0 < $params['tcp_keepalive'] && (!$isRedisExt || \defined('Redis::OPT_TCP_KEEPALIVE'))) {
                 $redis->setOption($isRedisExt ? \Redis::OPT_TCP_KEEPALIVE : Relay::OPT_TCP_KEEPALIVE, $params['tcp_keepalive']);
             }
+        } elseif (is_a($class, RelayCluster::class, true)) {
+            if (version_compare(phpversion('relay'), '0.10.0', '<')) {
+                throw new InvalidArgumentException('Using RelayCluster is supported from ext-relay 0.10.0 or higher.');
+            }
+
+            $initializer = static function () use ($class, $params, $hosts) {
+                foreach ($hosts as $i => $host) {
+                    $hosts[$i] = match ($host['scheme']) {
+                        'tcp' => $host['host'].':'.$host['port'],
+                        'tls' => 'tls://'.$host['host'].':'.$host['port'],
+                        default => $host['path'],
+                    };
+                }
+
+                try {
+                    $relayClusterContext = $params['relay_cluster_context'];
+
+                    foreach (['allow_self_signed', 'verify_peer_name','verify_peer'] as $contextStreamBoolField) {
+                        if(isset($relayClusterContext['stream'][$contextStreamBoolField])) {
+                            $relayClusterContext['stream'][$contextStreamBoolField] = filter_var($relayClusterContext['stream'][$contextStreamBoolField], \FILTER_VALIDATE_BOOL);
+                        }
+                    }
+
+                    foreach (['use-cache', 'client-tracking','throw-on-error','client-invalidations','reply-literal','persistent'] as $contextBoolField) {
+                        if(isset($relayClusterContext[$contextBoolField])) {
+                            $relayClusterContext[$contextBoolField] = filter_var($relayClusterContext[$contextBoolField], \FILTER_VALIDATE_BOOL);
+                        }
+                    }
+
+                    foreach (['max-retries', 'serializer','compression','compression-level'] as $contextIntField) {
+                        if(isset($relayClusterContext[$contextIntField])) {
+                            $relayClusterContext[$contextIntField] = filter_var($relayClusterContext[$contextIntField], \FILTER_VALIDATE_INT);
+                        }
+                    }
+
+                    $relayCluster = new $class(
+                        name: null,
+                        seeds: $hosts,
+                        connect_timeout: $params['timeout'],
+                        command_timeout: $params['command_timeout'],
+                        persistent: (bool) $params['persistent'],
+                        auth: $params['auth'] ?? null,
+                        context: $relayClusterContext
+                    );
+                } catch (\Relay\Exception $e) {
+                    throw new InvalidArgumentException('Relay cluster connection failed: '.$e->getMessage());
+                }
+
+                if (0 < $params['tcp_keepalive']) {
+                    $relayCluster->setOption(Relay::OPT_TCP_KEEPALIVE, $params['tcp_keepalive']);
+                }
+
+                if (0 < $params['read_timeout']) {
+                    $relayCluster->setOption(Relay::OPT_READ_TIMEOUT, $params['read_timeout']);
+                }
+
+                return $relayCluster;
+            };
+
+            $redis = $params['lazy'] ? RelayClusterProxy::createLazyProxy($initializer) : $initializer();
         } elseif (is_a($class, \RedisCluster::class, true)) {
             $initializer = static function () use ($isRedisExt, $class, $params, $hosts) {
                 foreach ($hosts as $i => $host) {
@@ -478,6 +545,35 @@ trait RedisTrait
         }
 
         $cleared = true;
+
+        if ($this->redis instanceof RelayCluster) {
+            $prefix = Relay::SCAN_PREFIX & $this->redis->getOption(Relay::OPT_SCAN) ? '' : $this->redis->getOption(Relay::OPT_PREFIX);
+            $prefixLen = \strlen($prefix);
+            $pattern = $prefix.$namespace.'*';
+            foreach ($this->redis->_masters() as $ipAndPort) {
+                $address = implode(':', $ipAndPort);
+                $cursor = null;
+                do {
+                    $keys = $this->redis->scan($cursor, $address, $pattern, 1000);
+                    if (isset($keys[1]) && \is_array($keys[1])) {
+                        $cursor = $keys[0];
+                        $keys = $keys[1];
+                    }
+
+                    if ($keys) {
+                        if ($prefixLen) {
+                            foreach ($keys as $i => $key) {
+                                $keys[$i] = substr($key, $prefixLen);
+                            }
+                        }
+                        $this->doDelete($keys);
+                    }
+                } while ($cursor);
+            }
+
+            return $cleared;
+        }
+
         $hosts = $this->getHosts();
         $host = reset($hosts);
         if ($host instanceof \Predis\Client) {
@@ -605,8 +701,9 @@ trait RedisTrait
         $ids = [];
         $redis ??= $this->redis;
 
-        if ($redis instanceof \RedisCluster || ($redis instanceof \Predis\ClientInterface && ($redis->getConnection() instanceof RedisCluster || $redis->getConnection() instanceof Predis2RedisCluster))) {
+        if ($redis instanceof \RedisCluster || $redis instanceof \Relay\Cluster || ($redis instanceof \Predis\ClientInterface && ($redis->getConnection() instanceof RedisCluster || $redis->getConnection() instanceof Predis2RedisCluster))) {
             // phpredis & predis don't support pipelining with RedisCluster
+            // \Relay\Cluster does not support multi with pipeline mode
             // see https://github.com/phpredis/phpredis/blob/develop/cluster.markdown#pipelining
             // see https://github.com/nrk/predis/issues/267#issuecomment-123781423
             $results = [];

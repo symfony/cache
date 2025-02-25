@@ -13,6 +13,7 @@ namespace Symfony\Component\Cache\Tests\Adapter;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Relay\Relay;
+use Relay\Cluster as RelayCluster;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 abstract class AbstractRedisAdapterTestCase extends AdapterTestCase
@@ -23,7 +24,7 @@ abstract class AbstractRedisAdapterTestCase extends AdapterTestCase
         'testDefaultLifeTime' => 'Testing expiration slows down the test suite',
     ];
 
-    protected static \Redis|Relay|\RedisArray|\RedisCluster|\Predis\ClientInterface $redis;
+    protected static \Redis|Relay|RelayCluster|\RedisArray|\RedisCluster|\Predis\ClientInterface $redis;
 
     public function createCachePool(int $defaultLifetime = 0, ?string $testMethod = null): CacheItemPoolInterface
     {

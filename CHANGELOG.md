@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+7.3
+---
+
+ * Add support for `\Relay\Cluster` in `RedisAdapter`
+
 7.2
 ---
 
