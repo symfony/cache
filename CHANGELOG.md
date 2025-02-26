@@ -5,6 +5,8 @@ CHANGELOG
 ---
 
  * Add support for `\Relay\Cluster` in `RedisAdapter`
+ * Add support for `valkey:` / `valkeys:` schemes
+ * Rename options "redis_cluster" and "redis_sentinel" to "cluster" and "sentinel" respectively
 
 7.2
 ---

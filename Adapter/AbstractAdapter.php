@@ -111,7 +111,7 @@ abstract class AbstractAdapter implements AdapterInterface, CacheInterface, Logg
 
     public static function createConnection(#[\SensitiveParameter] string $dsn, array $options = []): mixed
     {
-        if (str_starts_with($dsn, 'redis:') || str_starts_with($dsn, 'rediss:')) {
+        if (str_starts_with($dsn, 'redis:') || str_starts_with($dsn, 'rediss:') || str_starts_with($dsn, 'valkey:') || str_starts_with($dsn, 'valkeys:')) {
             return RedisAdapter::createConnection($dsn, $options);
         }
         if (str_starts_with($dsn, 'memcached:')) {
@@ -128,7 +128,7 @@ abstract class AbstractAdapter implements AdapterInterface, CacheInterface, Logg
             return PdoAdapter::createConnection($dsn, $options);
         }
 
-        throw new InvalidArgumentException('Unsupported DSN: it does not start with "redis[s]:", "memcached:", "couchbase:", "mysql:", "oci:", "pgsql:", "sqlsrv:" nor "sqlite:".');
+        throw new InvalidArgumentException('Unsupported DSN: it does not start with "redis[s]:", "valkey[s]:", "memcached:", "couchbase:", "mysql:", "oci:", "pgsql:", "sqlsrv:" nor "sqlite:".');
     }
 
     public function commit(): bool
