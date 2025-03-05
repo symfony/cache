@@ -38,17 +38,17 @@ trait RedisTrait
 {
     private static array $defaultConnectionOptions = [
         'class' => null,
-        'persistent' => 0,
+        'persistent' => false,
         'persistent_id' => null,
         'timeout' => 30,
         'read_timeout' => 0,
-        'command_timeout' => 0,
         'retry_interval' => 0,
         'tcp_keepalive' => 0,
         'lazy' => null,
         'cluster' => false,
+        'cluster_command_timeout' => 0,
+        'cluster_relay_context' => [],
         'sentinel' => null,
-        'relay_cluster_context' => [],
         'dbindex' => 0,
         'failover' => 'none',
         'ssl' => null, // see https://php.net/context.ssl
@@ -196,10 +196,11 @@ trait RedisTrait
             throw new CacheException('Redis Sentinel support requires one of: "predis/predis", "ext-redis >= 5.2", "ext-relay".');
         }
 
-        if (isset($params['lazy'])) {
-            $params['lazy'] = filter_var($params['lazy'], \FILTER_VALIDATE_BOOLEAN);
+        foreach (['lazy', 'persistent', 'cluster'] as $option) {
+            if (!\is_bool($params[$option] ?? false)) {
+                $params[$option] = filter_var($params[$option], \FILTER_VALIDATE_BOOLEAN);
+            }
         }
-        $params['cluster'] = filter_var($params['cluster'], \FILTER_VALIDATE_BOOLEAN);
 
         if ($params['cluster'] && isset($params['sentinel'])) {
             throw new InvalidArgumentException('Cannot use both "cluster" and "sentinel" at the same time.');
@@ -285,23 +286,8 @@ trait RedisTrait
 
                 try {
                     $extra = [
-                        'stream' => $params['ssl'] ?? null,
+                        'stream' => self::filterSslOptions($params['ssl'] ?? []) ?: null,
                     ];
-                    $booleanStreamOptions = [
-                        'allow_self_signed',
-                        'capture_peer_cert',
-                        'capture_peer_cert_chain',
-                        'disable_compression',
-                        'SNI_enabled',
-                        'verify_peer',
-                        'verify_peer_name',
-                    ];
-
-                    foreach ($extra['stream'] ?? [] as $streamOption => $value) {
-                        if (\in_array($streamOption, $booleanStreamOptions, true) && \is_string($value)) {
-                            $extra['stream'][$streamOption] = filter_var($value, \FILTER_VALIDATE_BOOL);
-                        }
-                    }
 
                     if (isset($params['auth'])) {
                         $extra['auth'] = $params['auth'];
@@ -379,34 +365,27 @@ trait RedisTrait
                 }
 
                 try {
-                    $relayClusterContext = $params['relay_cluster_context'];
+                    $context = $params['cluster_relay_context'];
+                    $context['stream'] = self::filterSslOptions($params['ssl'] ?? []) ?: null;
 
-                    foreach (['allow_self_signed', 'verify_peer_name', 'verify_peer'] as $contextStreamBoolField) {
-                        if (isset($relayClusterContext['stream'][$contextStreamBoolField])) {
-                            $relayClusterContext['stream'][$contextStreamBoolField] = filter_var($relayClusterContext['stream'][$contextStreamBoolField], \FILTER_VALIDATE_BOOL);
-                        }
-                    }
-
-                    foreach (['use-cache', 'client-tracking', 'throw-on-error', 'client-invalidations', 'reply-literal', 'persistent'] as $contextBoolField) {
-                        if (isset($relayClusterContext[$contextBoolField])) {
-                            $relayClusterContext[$contextBoolField] = filter_var($relayClusterContext[$contextBoolField], \FILTER_VALIDATE_BOOL);
-                        }
-                    }
-
-                    foreach (['max-retries', 'serializer', 'compression', 'compression-level'] as $contextIntField) {
-                        if (isset($relayClusterContext[$contextIntField])) {
-                            $relayClusterContext[$contextIntField] = filter_var($relayClusterContext[$contextIntField], \FILTER_VALIDATE_INT);
-                        }
+                    foreach ($context as $name => $value) {
+                        match ($name) {
+                            'use-cache', 'client-tracking', 'throw-on-error', 'client-invalidations', 'reply-literal', 'persistent',
+                                => $context[$name] = filter_var($value, \FILTER_VALIDATE_BOOLEAN),
+                            'max-retries', 'serializer', 'compression', 'compression-level',
+                                => $context[$name] = filter_var($value, \FILTER_VALIDATE_INT),
+                            default => null,
+                        };
                     }
 
                     $relayCluster = new $class(
                         name: null,
                         seeds: $hosts,
                         connect_timeout: $params['timeout'],
-                        command_timeout: $params['command_timeout'],
-                        persistent: (bool) $params['persistent'],
+                        command_timeout: $params['cluster_command_timeout'],
+                        persistent: $params['persistent'],
                         auth: $params['auth'] ?? null,
-                        context: $relayClusterContext
+                        context: $context,
                     );
                 } catch (\Relay\Exception $e) {
                     throw new InvalidArgumentException('Relay cluster connection failed: '.$e->getMessage());
@@ -435,7 +414,7 @@ trait RedisTrait
                 }
 
                 try {
-                    $redis = new $class(null, $hosts, $params['timeout'], $params['read_timeout'], (bool) $params['persistent'], $params['auth'] ?? '', ...\defined('Redis::SCAN_PREFIX') ? [$params['ssl'] ?? null] : []);
+                    $redis = new $class(null, $hosts, $params['timeout'], $params['read_timeout'], $params['persistent'], $params['auth'] ?? '', ...\defined('Redis::SCAN_PREFIX') ? [$params['ssl'] ?? null] : []);
                 } catch (\RedisClusterException $e) {
                     throw new InvalidArgumentException('Redis connection failed: '.$e->getMessage());
                 }
@@ -795,5 +774,18 @@ trait RedisTrait
         }
 
         return $hosts;
+    }
+
+    private static function filterSslOptions(array $options): array
+    {
+        foreach ($options as $name => $value) {
+            match ($name) {
+                'allow_self_signed', 'capture_peer_cert', 'capture_peer_cert_chain', 'disable_compression', 'SNI_enabled', 'verify_peer', 'verify_peer_name',
+                    => $options[$name] = filter_var($value, \FILTER_VALIDATE_BOOLEAN),
+                default => null,
+            };
+        }
+
+        return $options;
     }
 }
