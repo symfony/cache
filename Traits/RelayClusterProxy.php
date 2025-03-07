@@ -37,7 +37,7 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
         int|float $command_timeout = 0,
         bool $persistent = false,
         #[\SensitiveParameter] mixed $auth = null,
-        array|null $context = null
+        array|null $context = null,
     ) {
         $this->initializeLazyObject()->__construct(...\func_get_args());
     }
@@ -156,7 +156,6 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
     {
         return $this->initializeLazyObject()->endpointId(...\func_get_args());
     }
-
 
     public function rawCommand(array|string $key_or_address, string $cmd, mixed ...$args): mixed
     {
@@ -383,12 +382,13 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
         return $this->initializeLazyObject()->bitpos(...\func_get_args());
     }
 
-    public function blmove(mixed $srckey, mixed $dstkey, string $srcpos, string $dstpos, float $timeout): \Relay\Cluster|string|null|false
+    public function blmove(mixed $srckey, mixed $dstkey, string $srcpos, string $dstpos, float $timeout): \Relay\Cluster|string|false|null
     {
         return $this->initializeLazyObject()->blmove(...\func_get_args());
     }
 
-    public function lmove(mixed $srckey, mixed $dstkey, string $srcpos, string $dstpos): Cluster|string|null|false {
+    public function lmove(mixed $srckey, mixed $dstkey, string $srcpos, string $dstpos): Cluster|string|false|null
+    {
         return $this->initializeLazyObject()->lmove(...\func_get_args());
     }
 
@@ -662,7 +662,8 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
         return $this->initializeLazyObject()->ltrim(...\func_get_args());
     }
 
-    public static function maxMemory(): int {
+    public static function maxMemory(): int
+    {
         return \Relay\Cluster::maxMemory();
     }
 
@@ -1083,7 +1084,7 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
 
     public function zrank(mixed $key, mixed $rank, bool $withscore = false): Cluster|array|int|false
     {
-          return $this->initializeLazyObject()->zrank(...\func_get_args());
+        return $this->initializeLazyObject()->zrank(...\func_get_args());
     }
 
     public function zrangebylex(mixed $key, mixed $min, mixed $max, int $offset = -1, int $count = -1): \Relay\Cluster|array|false

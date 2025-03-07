@@ -12,8 +12,8 @@
 namespace Symfony\Component\Cache\Tests\Traits;
 
 use PHPUnit\Framework\TestCase;
-use Relay\Relay;
 use Relay\Cluster as RelayCluster;
+use Relay\Relay;
 use Symfony\Component\Cache\Traits\RedisProxyTrait;
 use Symfony\Component\Cache\Traits\RelayClusterProxy;
 use Symfony\Component\Cache\Traits\RelayProxy;
@@ -123,7 +123,6 @@ class RedisProxiesTest extends TestCase
 
         $this->assertEquals($expectedProxy, $proxy);
     }
-
 
     /**
      * @requires extension relay

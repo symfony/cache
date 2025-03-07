@@ -20,8 +20,8 @@ use Predis\Connection\Cluster\RedisCluster as Predis2RedisCluster;
 use Predis\Connection\Replication\ReplicationInterface as Predis2ReplicationInterface;
 use Predis\Response\ErrorInterface;
 use Predis\Response\Status;
-use Relay\Relay;
 use Relay\Cluster as RelayCluster;
+use Relay\Relay;
 use Relay\Sentinel;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
@@ -382,20 +382,20 @@ trait RedisTrait
                 try {
                     $relayClusterContext = $params['relay_cluster_context'];
 
-                    foreach (['allow_self_signed', 'verify_peer_name','verify_peer'] as $contextStreamBoolField) {
-                        if(isset($relayClusterContext['stream'][$contextStreamBoolField])) {
+                    foreach (['allow_self_signed', 'verify_peer_name', 'verify_peer'] as $contextStreamBoolField) {
+                        if (isset($relayClusterContext['stream'][$contextStreamBoolField])) {
                             $relayClusterContext['stream'][$contextStreamBoolField] = filter_var($relayClusterContext['stream'][$contextStreamBoolField], \FILTER_VALIDATE_BOOL);
                         }
                     }
 
-                    foreach (['use-cache', 'client-tracking','throw-on-error','client-invalidations','reply-literal','persistent'] as $contextBoolField) {
-                        if(isset($relayClusterContext[$contextBoolField])) {
+                    foreach (['use-cache', 'client-tracking', 'throw-on-error', 'client-invalidations', 'reply-literal', 'persistent'] as $contextBoolField) {
+                        if (isset($relayClusterContext[$contextBoolField])) {
                             $relayClusterContext[$contextBoolField] = filter_var($relayClusterContext[$contextBoolField], \FILTER_VALIDATE_BOOL);
                         }
                     }
 
-                    foreach (['max-retries', 'serializer','compression','compression-level'] as $contextIntField) {
-                        if(isset($relayClusterContext[$contextIntField])) {
+                    foreach (['max-retries', 'serializer', 'compression', 'compression-level'] as $contextIntField) {
+                        if (isset($relayClusterContext[$contextIntField])) {
                             $relayClusterContext[$contextIntField] = filter_var($relayClusterContext[$contextIntField], \FILTER_VALIDATE_INT);
                         }
                     }
