@@ -46,7 +46,6 @@ trait RedisTrait
         'retry_interval' => 0,
         'tcp_keepalive' => 0,
         'lazy' => null,
-        'redis_sentinel' => null,
         'cluster' => false,
         'sentinel' => null,
         'relay_cluster_context' => [],
