@@ -17,7 +17,6 @@ use Relay\Relay;
 use Symfony\Component\Cache\Traits\RedisProxyTrait;
 use Symfony\Component\Cache\Traits\RelayClusterProxy;
 use Symfony\Component\Cache\Traits\RelayProxy;
-use Symfony\Component\VarExporter\LazyProxyTrait;
 use Symfony\Component\VarExporter\ProxyHelper;
 
 class RedisProxiesTest extends TestCase
@@ -37,7 +36,7 @@ class RedisProxiesTest extends TestCase
         $methods = [];
 
         foreach ((new \ReflectionClass(\sprintf('Symfony\Component\Cache\Traits\\%s%dProxy', $class, $version)))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name)) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name)) {
                 continue;
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
@@ -89,7 +88,7 @@ class RedisProxiesTest extends TestCase
         $expectedMethods = [];
 
         foreach ((new \ReflectionClass(RelayProxy::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
                 continue;
             }
 
@@ -136,7 +135,7 @@ class RedisProxiesTest extends TestCase
         $expectedMethods = [];
 
         foreach ((new \ReflectionClass(RelayClusterProxy::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
                 continue;
             }
 
