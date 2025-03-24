@@ -19,6 +19,9 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\DBAL\Schema\Name\Identifier;
+use Doctrine\DBAL\Schema\Name\UnqualifiedName;
+use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Tools\DsnParser;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
@@ -378,6 +381,11 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         $table->addColumn($this->dataCol, 'blob', ['length' => 16777215]);
         $table->addColumn($this->lifetimeCol, 'integer', ['unsigned' => true, 'notnull' => false]);
         $table->addColumn($this->timeCol, 'integer', ['unsigned' => true]);
-        $table->setPrimaryKey([$this->idCol]);
+
+        if (class_exists(PrimaryKeyConstraint::class)) {
+            $table->addPrimaryKeyConstraint(new PrimaryKeyConstraint(null, [new UnqualifiedName(Identifier::unquoted($this->idCol))], true));
+        } else {
+            $table->setPrimaryKey([$this->idCol]);
+        }
     }
 }
