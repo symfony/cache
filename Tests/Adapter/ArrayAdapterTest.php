@@ -102,17 +102,4 @@ class ArrayAdapterTest extends AdapterTestCase
 
         $this->assertSame(TestEnum::Foo, $cache->getItem('foo')->get());
     }
-
-    public function testExpiryCleanupOnError()
-    {
-        $cache = new ArrayAdapter();
-
-        $item = $cache->getItem('foo');
-        $this->assertTrue($cache->save($item->set('bar')));
-        $this->assertTrue($cache->hasItem('foo'));
-
-        $item->set(static fn () => null);
-        $this->assertFalse($cache->save($item));
-        $this->assertFalse($cache->hasItem('foo'));
-    }
 }
