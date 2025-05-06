@@ -359,9 +359,16 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
 
         $platform = $this->conn->getDatabasePlatform();
 
+        if (interface_exists(DBALException::class)) {
+            // DBAL 4+
+            $sqlitePlatformClass = 'Doctrine\DBAL\Platforms\SQLitePlatform';
+        } else {
+            $sqlitePlatformClass = 'Doctrine\DBAL\Platforms\SqlitePlatform';
+        }
+
         return $this->platformName = match (true) {
             $platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform => 'mysql',
-            $platform instanceof \Doctrine\DBAL\Platforms\SqlitePlatform => 'sqlite',
+            $platform instanceof $sqlitePlatformClass => 'sqlite',
             $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform => 'pgsql',
             $platform instanceof \Doctrine\DBAL\Platforms\OraclePlatform => 'oci',
             $platform instanceof \Doctrine\DBAL\Platforms\SQLServerPlatform => 'sqlsrv',
