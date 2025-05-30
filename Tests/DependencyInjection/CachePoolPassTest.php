@@ -209,7 +209,8 @@ class CachePoolPassTest extends TestCase
         $container->register('cache.adapter.apcu', ApcuAdapter::class)
             ->setArguments([null, 0, null])
             ->addTag('cache.pool');
-        $container->register('cache.chain', ChainAdapter::class)
+        $container->register('cache.adapter.chain', ChainAdapter::class);
+        $container->setDefinition('cache.chain', new ChildDefinition('cache.adapter.chain'))
             ->addArgument(['cache.adapter.array', 'cache.adapter.apcu'])
             ->addTag('cache.pool');
         $container->setDefinition('cache.app', new ChildDefinition('cache.chain'))
@@ -224,7 +225,7 @@ class CachePoolPassTest extends TestCase
         $this->assertSame('cache.chain', $appCachePool->getParent());
 
         $chainCachePool = $container->getDefinition('cache.chain');
-        $this->assertNotInstanceOf(ChildDefinition::class, $chainCachePool);
+        $this->assertInstanceOf(ChildDefinition::class, $chainCachePool);
         $this->assertCount(2, $chainCachePool->getArgument(0));
         $this->assertInstanceOf(ChildDefinition::class, $chainCachePool->getArgument(0)[0]);
         $this->assertSame('cache.adapter.array', $chainCachePool->getArgument(0)[0]->getParent());
