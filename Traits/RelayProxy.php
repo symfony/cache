@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Cache\Traits;
 
+use Symfony\Component\Cache\Traits\Relay\BgsaveTrait;
 use Symfony\Component\Cache\Traits\Relay\CopyTrait;
 use Symfony\Component\Cache\Traits\Relay\GeosearchTrait;
 use Symfony\Component\Cache\Traits\Relay\GetrangeTrait;
@@ -32,6 +33,7 @@ class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);
  */
 class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInterface
 {
+    use BgsaveTrait;
     use CopyTrait;
     use GeosearchTrait;
     use GetrangeTrait;
@@ -339,11 +341,6 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     public function lcs($key1, $key2, $options = null): mixed
     {
         return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->lcs(...\func_get_args());
-    }
-
-    public function bgsave($schedule = false): \Relay\Relay|bool
-    {
-        return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->bgsave(...\func_get_args());
     }
 
     public function save(): \Relay\Relay|bool
