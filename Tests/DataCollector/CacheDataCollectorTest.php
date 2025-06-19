@@ -120,9 +120,9 @@ class CacheDataCollectorTest extends TestCase
 
         $stats = $collector->getStatistics();
         $this->assertGreaterThan(0, $stats[self::INSTANCE_NAME]['time']);
-        $this->assertEquals($stats[self::INSTANCE_NAME]['hits'], 0, 'hits');
-        $this->assertEquals($stats[self::INSTANCE_NAME]['misses'], 1, 'misses');
-        $this->assertEquals($stats[self::INSTANCE_NAME]['calls'], 1, 'calls');
+        $this->assertEquals(0, $stats[self::INSTANCE_NAME]['hits'], 'hits');
+        $this->assertEquals(1, $stats[self::INSTANCE_NAME]['misses'], 'misses');
+        $this->assertEquals(1, $stats[self::INSTANCE_NAME]['calls'], 'calls');
         $this->assertInstanceOf(Data::class, $collector->getCalls());
     }
 
