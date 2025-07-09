@@ -42,6 +42,8 @@
         "symfony/var-dumper": "^7.4|^8.0"
     },
     "conflict": {
+        "ext-redis": "<6.2",
+        "ext-relay": "<0.11",
         "doctrine/dbal": "<3.6"
     },
     "autoload": {
