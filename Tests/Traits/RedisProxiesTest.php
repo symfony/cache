@@ -29,18 +29,17 @@ class RedisProxiesTest extends TestCase
      */
     public function testRedisProxy($class)
     {
-        $version = version_compare(phpversion('redis'), '6', '>') ? '6' : '5';
-        $proxy = file_get_contents(\dirname(__DIR__, 2)."/Traits/{$class}{$version}Proxy.php");
+        $proxy = file_get_contents(\dirname(__DIR__, 2)."/Traits/{$class}Proxy.php");
         $proxy = substr($proxy, 0, 2 + strpos($proxy, '[];'));
         $expected = substr($proxy, 0, 2 + strpos($proxy, '}'));
         $methods = [];
 
-        foreach ((new \ReflectionClass(\sprintf('Symfony\Component\Cache\Traits\\%s%dProxy', $class, $version)))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name)) {
+        foreach ((new \ReflectionClass(\sprintf('Symfony\Component\Cache\Traits\\%sProxy', $class)))->getMethods() as $method) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isInternal()) {
                 continue;
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
-            $methods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, false, $args)."\n".<<<EOPHP
+            $methods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, true, $args)."\n".<<<EOPHP
                 {
                     {$return}\$this->initializeLazyObject()->{$method->name}({$args});
                 }
@@ -54,7 +53,7 @@ class RedisProxiesTest extends TestCase
         $methods = [];
 
         foreach ((new \ReflectionClass($class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name)) {
+            if ('__destruct' === $method->name || 'reset' === $method->name) {
                 continue;
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
@@ -88,12 +87,12 @@ class RedisProxiesTest extends TestCase
         $expectedMethods = [];
 
         foreach ((new \ReflectionClass(RelayProxy::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isInternal()) {
                 continue;
             }
 
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
-            $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, false, $args)."\n".<<<EOPHP
+            $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, true, $args)."\n".<<<EOPHP
                 {
                     {$return}\$this->initializeLazyObject()->{$method->name}({$args});
                 }
@@ -102,7 +101,7 @@ class RedisProxiesTest extends TestCase
         }
 
         foreach ((new \ReflectionClass(Relay::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('__destruct' === $method->name || 'reset' === $method->name || $method->isStatic()) {
                 continue;
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
@@ -135,12 +134,12 @@ class RedisProxiesTest extends TestCase
         $expectedMethods = [];
 
         foreach ((new \ReflectionClass(RelayClusterProxy::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isInternal()) {
                 continue;
             }
 
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
-            $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, false, $args)."\n".<<<EOPHP
+            $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, true, $args)."\n".<<<EOPHP
                 {
                     {$return}\$this->initializeLazyObject()->{$method->name}({$args});
                 }
@@ -149,7 +148,7 @@ class RedisProxiesTest extends TestCase
         }
 
         foreach ((new \ReflectionClass(RelayCluster::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('__destruct' === $method->name || 'reset' === $method->name || $method->isStatic()) {
                 continue;
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
