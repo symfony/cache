@@ -34,7 +34,7 @@ class RedisProxiesTest extends TestCase
         $expected = substr($proxy, 0, 2 + strpos($proxy, '}'));
         $methods = [];
 
-        foreach ((new \ReflectionClass(sprintf('Symfony\Component\Cache\Traits\\%s%dProxy', $class, $version)))->getMethods() as $method) {
+        foreach ((new \ReflectionClass(\sprintf('Symfony\Component\Cache\Traits\\%s%dProxy', $class, $version)))->getMethods() as $method) {
             if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name)) {
                 continue;
             }
