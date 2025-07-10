@@ -111,7 +111,7 @@ class CachePoolPass implements CompilerPassInterface
                     }
 
                     if (ChainAdapter::class === $chainedClass) {
-                        throw new InvalidArgumentException(sprintf('Invalid service "%s": chain of adapters cannot reference another chain, found "%s".', $id, $chainedPool->getParent()));
+                        throw new InvalidArgumentException(\sprintf('Invalid service "%s": chain of adapters cannot reference another chain, found "%s".', $id, $chainedPool->getParent()));
                     }
 
                     $i = 0;
@@ -169,7 +169,7 @@ class CachePoolPass implements CompilerPassInterface
                 unset($tags[0][$attr]);
             }
             if (!empty($tags[0])) {
-                throw new InvalidArgumentException(sprintf('Invalid "cache.pool" tag for service "%s": accepted attributes are "clearer", "provider", "name", "namespace", "default_lifetime", "early_expiration_message_bus" and "reset", found "%s".', $id, implode('", "', array_keys($tags[0]))));
+                throw new InvalidArgumentException(\sprintf('Invalid "cache.pool" tag for service "%s": accepted attributes are "clearer", "provider", "name", "namespace", "default_lifetime", "early_expiration_message_bus" and "reset", found "%s".', $id, implode('", "', array_keys($tags[0]))));
             }
 
             if (null !== $clearer) {
