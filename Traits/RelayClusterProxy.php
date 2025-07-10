@@ -31,13 +31,13 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
     }
 
     public function __construct(
-        string|null $name,
-        array|null $seeds = null,
+        ?string $name,
+        ?array $seeds = null,
         int|float $connect_timeout = 0,
         int|float $command_timeout = 0,
         bool $persistent = false,
         #[\SensitiveParameter] mixed $auth = null,
-        array|null $context = null,
+        ?array $context = null,
     ) {
         $this->initializeLazyObject()->__construct(...\func_get_args());
     }
@@ -172,12 +172,12 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->info(...\func_get_args());
     }
 
-    public function flushdb(array|string $key_or_address, bool|null $sync = null): Cluster|bool
+    public function flushdb(array|string $key_or_address, ?bool $sync = null): Cluster|bool
     {
         return $this->initializeLazyObject()->flushdb(...\func_get_args());
     }
 
-    public function flushall(array|string $key_or_address, bool|null $sync = null): Cluster|bool
+    public function flushall(array|string $key_or_address, ?bool $sync = null): Cluster|bool
     {
         return $this->initializeLazyObject()->flushall(...\func_get_args());
     }
@@ -192,7 +192,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->waitaof(...\func_get_args());
     }
 
-    public function restore(mixed $key, int $ttl, string $value, array|null $options = null): Cluster|bool
+    public function restore(mixed $key, int $ttl, string $value, ?array $options = null): Cluster|bool
     {
         return $this->initializeLazyObject()->restore(...\func_get_args());
     }
@@ -202,7 +202,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->echo(...\func_get_args());
     }
 
-    public function ping(array|string $key_or_address, string|null $message = null): Cluster|bool|string
+    public function ping(array|string $key_or_address, ?string $message = null): Cluster|bool|string
     {
         return $this->initializeLazyObject()->ping(...\func_get_args());
     }
@@ -232,7 +232,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->lastsave(...\func_get_args());
     }
 
-    public function lcs(mixed $key1, mixed $key2, array|null $options = null): mixed
+    public function lcs(mixed $key1, mixed $key2, ?array $options = null): mixed
     {
         return $this->initializeLazyObject()->lcs(...\func_get_args());
     }
@@ -297,7 +297,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->geoadd(...\func_get_args());
     }
 
-    public function geodist(mixed $key, string $src, string $dst, string|null $unit = null): Cluster|float|false
+    public function geodist(mixed $key, string $src, string $dst, ?string $unit = null): Cluster|float|false
     {
         return $this->initializeLazyObject()->geodist(...\func_get_args());
     }
@@ -492,7 +492,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->unlink(...\func_get_args());
     }
 
-    public function expire(mixed $key, int $seconds, string|null $mode = null): Cluster|bool
+    public function expire(mixed $key, int $seconds, ?string $mode = null): Cluster|bool
     {
         return $this->initializeLazyObject()->expire(...\func_get_args());
     }
@@ -572,7 +572,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->lpop(...\func_get_args());
     }
 
-    public function lpos(mixed $key, mixed $value, array|null $options = null): mixed
+    public function lpos(mixed $key, mixed $value, ?array $options = null): mixed
     {
         return $this->initializeLazyObject()->lpos(...\func_get_args());
     }
@@ -707,7 +707,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->hexists(...\func_get_args());
     }
 
-    public function hrandfield(mixed $key, array|null $options = null): Cluster|array|string|false
+    public function hrandfield(mixed $key, ?array $options = null): Cluster|array|string|false
     {
         return $this->initializeLazyObject()->hrandfield(...\func_get_args());
     }
@@ -862,7 +862,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->getMode(...\func_get_args());
     }
 
-    public function scan(mixed &$iterator, array|string $key_or_address, mixed $match = null, int $count = 0, string|null $type = null): array|false
+    public function scan(mixed &$iterator, array|string $key_or_address, mixed $match = null, int $count = 0, ?string $type = null): array|false
     {
         return $this->initializeLazyObject()->scan($iterator, ...\array_slice(\func_get_args(), 1));
     }
@@ -1007,12 +1007,12 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->xdel(...\func_get_args());
     }
 
-    public function xinfo(string $operation, string|null $arg1 = null, string|null $arg2 = null, int $count = -1): mixed
+    public function xinfo(string $operation, ?string $arg1 = null, ?string $arg2 = null, int $count = -1): mixed
     {
         return $this->initializeLazyObject()->xinfo(...\func_get_args());
     }
 
-    public function xpending(mixed $key, string $group, string|null $start = null, string|null $end = null, int $count = -1, string|null $consumer = null, int $idle = 0): Cluster|array|false
+    public function xpending(mixed $key, string $group, ?string $start = null, ?string $end = null, int $count = -1, ?string $consumer = null, int $idle = 0): Cluster|array|false
     {
         return $this->initializeLazyObject()->xpending(...\func_get_args());
     }
@@ -1047,7 +1047,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->zadd(...\func_get_args());
     }
 
-    public function zrandmember(mixed $key, array|null $options = null): mixed
+    public function zrandmember(mixed $key, ?array $options = null): mixed
     {
         return $this->initializeLazyObject()->zrandmember(...\func_get_args());
     }
@@ -1127,7 +1127,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->zcount(...\func_get_args());
     }
 
-    public function zdiff(array $keys, array|null $options = null): Cluster|array|false
+    public function zdiff(array $keys, ?array $options = null): Cluster|array|false
     {
         return $this->initializeLazyObject()->zdiff(...\func_get_args());
     }
@@ -1152,7 +1152,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->zmscore(...\func_get_args());
     }
 
-    public function zinter(array $keys, array|null $weights = null, mixed $options = null): Cluster|array|false
+    public function zinter(array $keys, ?array $weights = null, mixed $options = null): Cluster|array|false
     {
         return $this->initializeLazyObject()->zinter(...\func_get_args());
     }
@@ -1162,17 +1162,17 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->zintercard(...\func_get_args());
     }
 
-    public function zinterstore(mixed $dstkey, array $keys, array|null $weights = null, mixed $options = null): Cluster|false|int
+    public function zinterstore(mixed $dstkey, array $keys, ?array $weights = null, mixed $options = null): Cluster|false|int
     {
         return $this->initializeLazyObject()->zinterstore(...\func_get_args());
     }
 
-    public function zunion(array $keys, array|null $weights = null, mixed $options = null): Cluster|array|false
+    public function zunion(array $keys, ?array $weights = null, mixed $options = null): Cluster|array|false
     {
         return $this->initializeLazyObject()->zunion(...\func_get_args());
     }
 
-    public function zunionstore(mixed $dstkey, array $keys, array|null $weights = null, mixed $options = null): Cluster|false|int
+    public function zunionstore(mixed $dstkey, array $keys, ?array $weights = null, mixed $options = null): Cluster|false|int
     {
         return $this->initializeLazyObject()->zunionstore(...\func_get_args());
     }
@@ -1197,7 +1197,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
         return $this->initializeLazyObject()->_masters(...\func_get_args());
     }
 
-    public function copy(mixed $srckey, mixed $dstkey, array|null $options = null): Cluster|bool
+    public function copy(mixed $srckey, mixed $dstkey, ?array $options = null): Cluster|bool
     {
         return $this->initializeLazyObject()->copy(...\func_get_args());
     }
