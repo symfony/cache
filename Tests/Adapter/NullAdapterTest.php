@@ -138,4 +138,11 @@ class NullAdapterTest extends TestCase
         $this->assertTrue($adapter->saveDeferred($item));
         $this->assertTrue($this->createCachePool()->commit());
     }
+
+    public function testInvalidateTags()
+    {
+        $adapter = $this->createCachePool();
+
+        self::assertTrue($adapter->invalidateTags(['foo']));
+    }
 }
