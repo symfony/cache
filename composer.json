@@ -44,7 +44,7 @@
     },
     "conflict": {
         "ext-redis": "<6.2",
-        "ext-relay": "<0.11",
+        "ext-relay": "<0.11.1",
         "doctrine/dbal": "<3.6",
         "symfony/dependency-injection": "<6.4",
         "symfony/http-kernel": "<6.4",
