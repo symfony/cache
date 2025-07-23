@@ -13,12 +13,17 @@ namespace Symfony\Component\Cache\Traits;
 
 use Symfony\Component\Cache\Traits\Relay\BgsaveTrait;
 use Symfony\Component\Cache\Traits\Relay\CopyTrait;
+use Symfony\Component\Cache\Traits\Relay\FtTrait;
 use Symfony\Component\Cache\Traits\Relay\GeosearchTrait;
 use Symfony\Component\Cache\Traits\Relay\GetrangeTrait;
+use Symfony\Component\Cache\Traits\Relay\GetWithMetaTrait;
 use Symfony\Component\Cache\Traits\Relay\HsetTrait;
+use Symfony\Component\Cache\Traits\Relay\IsTrackedTrait;
 use Symfony\Component\Cache\Traits\Relay\MoveTrait;
 use Symfony\Component\Cache\Traits\Relay\NullableReturnTrait;
 use Symfony\Component\Cache\Traits\Relay\PfcountTrait;
+use Symfony\Component\Cache\Traits\Relay\Relay11Trait;
+use Symfony\Component\Cache\Traits\Relay\SwapdbTrait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Component\VarExporter\LazyProxyTrait;
 use Symfony\Contracts\Service\ResetInterface;
@@ -35,9 +40,12 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
 {
     use BgsaveTrait;
     use CopyTrait;
+    use FtTrait;
     use GeosearchTrait;
     use GetrangeTrait;
+    use GetWithMetaTrait;
     use HsetTrait;
+    use IsTrackedTrait;
     use LazyProxyTrait {
         resetLazyObject as reset;
     }
@@ -45,6 +53,8 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     use NullableReturnTrait;
     use PfcountTrait;
     use RelayProxyTrait;
+    use Relay11Trait;
+    use SwapdbTrait;
 
     private const LAZY_OBJECT_PROPERTY_SCOPES = [];
 

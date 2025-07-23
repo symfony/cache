@@ -87,12 +87,12 @@ class RedisProxiesTest extends TestCase
         $expectedMethods = [];
 
         foreach ((new \ReflectionClass(RelayProxy::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name) || $method->isInternal()) {
                 continue;
             }
 
             $return = $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
-            $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, false, $args)."\n".<<<EOPHP
+            $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, true, $args)."\n".<<<EOPHP
                 {
                     {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
                 }
@@ -101,7 +101,7 @@ class RedisProxiesTest extends TestCase
         }
 
         foreach ((new \ReflectionClass(Relay::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(LazyProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('__destruct' === $method->name || 'reset' === $method->name || $method->isStatic()) {
                 continue;
             }
             $return = $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
