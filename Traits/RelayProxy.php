@@ -778,6 +778,11 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
         return $this->initializeLazyObject()->isConnected(...\func_get_args());
     }
 
+    public function isTracked($key): bool
+    {
+        return $this->initializeLazyObject()->isTracked(...\func_get_args());
+    }
+
     public function jsonArrAppend($key, $value_or_array, $path = null): \Relay\Relay|array|false
     {
         return $this->initializeLazyObject()->jsonArrAppend(...\func_get_args());

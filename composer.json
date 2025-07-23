@@ -43,7 +43,7 @@
     },
     "conflict": {
         "ext-redis": "<6.2",
-        "ext-relay": "<0.11",
+        "ext-relay": "<0.11.1",
         "doctrine/dbal": "<4.3"
     },
     "autoload": {
