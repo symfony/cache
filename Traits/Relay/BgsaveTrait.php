@@ -19,7 +19,7 @@ if (version_compare(phpversion('relay'), '0.11', '>=')) {
     {
         public function bgsave($arg = null): \Relay\Relay|bool
         {
-            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->bgsave(...\func_get_args());
+            return $this->initializeLazyObject()->bgsave(...\func_get_args());
         }
     }
 } else {
@@ -30,7 +30,7 @@ if (version_compare(phpversion('relay'), '0.11', '>=')) {
     {
         public function bgsave($schedule = false): \Relay\Relay|bool
         {
-            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->bgsave(...\func_get_args());
+            return $this->initializeLazyObject()->bgsave(...\func_get_args());
         }
     }
 }
