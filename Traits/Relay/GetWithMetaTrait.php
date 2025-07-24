@@ -19,7 +19,7 @@ if (version_compare(phpversion('relay'), '0.10.1', '>=')) {
     {
         public function getWithMeta($key): \Relay\Relay|array|false
         {
-            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->getWithMeta(...\func_get_args());
+            return $this->initializeLazyObject()->getWithMeta(...\func_get_args());
         }
     }
 } else {

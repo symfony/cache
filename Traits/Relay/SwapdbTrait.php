@@ -19,7 +19,7 @@ if (version_compare(phpversion('relay'), '0.9.0', '>=')) {
     {
         public function swapdb($index1, $index2): \Relay\Relay|bool
         {
-            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->swapdb(...\func_get_args());
+            return $this->initializeLazyObject()->swapdb(...\func_get_args());
         }
     }
 } else {
