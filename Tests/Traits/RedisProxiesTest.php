@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Cache\Tests\Traits;
 
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Relay\Cluster as RelayCluster;
 use Relay\Relay;
@@ -21,12 +23,9 @@ use Symfony\Component\VarExporter\ProxyHelper;
 
 class RedisProxiesTest extends TestCase
 {
-    /**
-     * @requires extension redis
-     *
-     * @testWith ["Redis"]
-     *           ["RedisCluster"]
-     */
+    #[RequiresPhpExtension('redis')]
+    #[TestWith([\Redis::class])]
+    #[TestWith([\RedisCluster::class])]
     public function testRedisProxy($class)
     {
         $proxy = file_get_contents(\dirname(__DIR__, 2)."/Traits/{$class}Proxy.php");
@@ -75,9 +74,7 @@ class RedisProxiesTest extends TestCase
         $this->assertSame($expected, $proxy);
     }
 
-    /**
-     * @requires extension relay
-     */
+    #[RequiresPhpExtension('relay')]
     public function testRelayProxy()
     {
         $proxy = file_get_contents(\dirname(__DIR__, 2).'/Traits/RelayProxy.php');
@@ -122,9 +119,7 @@ class RedisProxiesTest extends TestCase
         $this->assertEquals($expectedProxy, $proxy);
     }
 
-    /**
-     * @requires extension relay
-     */
+    #[RequiresPhpExtension('relay')]
     public function testRelayClusterProxy()
     {
         $proxy = file_get_contents(\dirname(__DIR__, 2).'/Traits/RelayClusterProxy.php');
