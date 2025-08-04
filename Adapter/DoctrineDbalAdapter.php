@@ -18,6 +18,10 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\Name\Identifier;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
@@ -367,11 +371,11 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         }
 
         return $this->platformName = match (true) {
-            $platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform => 'mysql',
+            $platform instanceof AbstractMySQLPlatform => 'mysql',
             $platform instanceof $sqlitePlatformClass => 'sqlite',
-            $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform => 'pgsql',
-            $platform instanceof \Doctrine\DBAL\Platforms\OraclePlatform => 'oci',
-            $platform instanceof \Doctrine\DBAL\Platforms\SQLServerPlatform => 'sqlsrv',
+            $platform instanceof PostgreSQLPlatform => 'pgsql',
+            $platform instanceof OraclePlatform => 'oci',
+            $platform instanceof SQLServerPlatform => 'sqlsrv',
             default => $platform::class,
         };
     }
