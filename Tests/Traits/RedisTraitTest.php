@@ -56,7 +56,7 @@ class RedisTraitTest extends TestCase
 
     public static function provideCreateConnection(): array
     {
-        $hosts = array_map(fn ($host) => \sprintf('host[%s]', $host), explode(' ', getenv('REDIS_CLUSTER_HOSTS')));
+        $hosts = array_map(fn ($host) => \sprintf('host[%s]', $host), explode(' ', getenv('REDIS_CLUSTER_HOSTS') ?: ''));
 
         return [
             [
@@ -79,7 +79,7 @@ class RedisTraitTest extends TestCase
     }
 
     /**
-     * Due to a bug in phpredis, the persistent connection will keep its last selected database. So when re-using
+     * Due to a bug in phpredis, the persistent connection will keep its last selected database. So when reusing
      * a persistent connection, the database has to be re-selected, too.
      *
      * @see https://github.com/phpredis/phpredis/issues/1920
