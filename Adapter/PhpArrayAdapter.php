@@ -259,7 +259,7 @@ class PhpArrayAdapter implements AdapterInterface, CacheInterface, PruneableInte
         } else {
             $directory = \dirname($this->file);
 
-            if (!is_dir($directory) && !@mkdir($directory, 0777, true)) {
+            if (!is_dir($directory) && !@mkdir($directory, 0o777, true)) {
                 throw new InvalidArgumentException(\sprintf('Cache directory does not exist and cannot be created: "%s".', $directory));
             }
 
@@ -324,7 +324,7 @@ class PhpArrayAdapter implements AdapterInterface, CacheInterface, PruneableInte
         $tmpFile = tempnam(\dirname($this->file), basename($this->file));
 
         file_put_contents($tmpFile, $dump);
-        @chmod($tmpFile, 0666 & ~umask());
+        @chmod($tmpFile, 0o666 & ~umask());
         unset($serialized, $value, $dump);
 
         @rename($tmpFile, $this->file);
