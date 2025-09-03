@@ -14,6 +14,7 @@ namespace Symfony\Component\Cache\Adapter;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 use Symfony\Component\Cache\PruneableInterface;
+use Symfony\Component\Cache\Traits\CachedValueInterface;
 use Symfony\Component\Cache\Traits\FilesystemCommonTrait;
 use Symfony\Component\VarExporter\VarExporter;
 
@@ -114,8 +115,10 @@ class PhpFilesAdapter extends AbstractAdapter implements PruneableInterface
                 $values[$id] = null;
             } elseif (!\is_object($value)) {
                 $values[$id] = $value;
+            } elseif ($value instanceof CachedValueInterface) {
+                $values[$id] = $value->getValue();
             } elseif (!$value instanceof LazyValue) {
-                $values[$id] = $value();
+                $values[$id] = $value;
             } elseif (false === $values[$id] = include $value->file) {
                 unset($values[$id], $this->values[$id]);
                 $missingIds[] = $id;
@@ -152,7 +155,7 @@ class PhpFilesAdapter extends AbstractAdapter implements PruneableInterface
                     if ($now >= $expiresAt) {
                         unset($this->values[$id], $missingIds[$k], self::$valuesCache[$file]);
                     }
-                } catch (\ErrorException $e) {
+                } catch (\ErrorException) {
                     unset($missingIds[$k]);
                 }
             }
@@ -236,7 +239,7 @@ class PhpFilesAdapter extends AbstractAdapter implements PruneableInterface
             if ($isStaticValue) {
                 $value = "return [{$expiry}, {$value}];";
             } elseif ($this->appendOnly) {
-                $value = "return [{$expiry}, static fn () => {$value}];";
+                $value = "return [{$expiry}, new class() implements \\".CachedValueInterface::class." { public function getValue(): mixed { return {$value}; } }];";
             } else {
                 // We cannot use a closure here because of https://bugs.php.net/76982
                 $value = str_replace('\Symfony\Component\VarExporter\Internal\\', '', $value);
