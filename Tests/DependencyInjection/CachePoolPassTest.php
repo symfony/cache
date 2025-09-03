@@ -17,6 +17,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\ChainAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Cache\DependencyInjection\CachePoolPass;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -102,15 +103,18 @@ class CachePoolPassTest extends TestCase
         $this->assertSame('mVXLns1cYU', $cachePool->getArgument(0));
     }
 
-    public function testNamespaceArgumentIsNotReplacedIfArrayAdapterIsUsed()
+    /**
+     * @dataProvider providerAdaptersNotNamespace
+     */
+    public function testNamespaceArgumentIsNotReplacedIfAdapterWithoutNamespace(string $adapterClass)
     {
         $container = new ContainerBuilder();
         $container->setParameter('kernel.container_class', 'app');
         $container->setParameter('kernel.project_dir', 'foo');
 
-        $container->register('cache.adapter.array', ArrayAdapter::class)->addArgument(0);
+        $container->register('cache.adapter', $adapterClass)->addArgument(0);
 
-        $cachePool = new ChildDefinition('cache.adapter.array');
+        $cachePool = new ChildDefinition('cache.adapter');
         $cachePool->addTag('cache.pool');
         $container->setDefinition('app.cache_pool', $cachePool);
 
@@ -119,21 +123,11 @@ class CachePoolPassTest extends TestCase
         $this->assertCount(0, $container->getDefinition('app.cache_pool')->getArguments());
     }
 
-    public function testNamespaceArgumentIsNotReplacedIfNullAdapterIsUsed()
+    public static function providerAdaptersNotNamespace(): iterable
     {
-        $container = new ContainerBuilder();
-        $container->setParameter('kernel.container_class', 'app');
-        $container->setParameter('kernel.project_dir', 'foo');
-
-        $container->register('cache.adapter.null', NullAdapter::class);
-
-        $cachePool = new ChildDefinition('cache.adapter.null');
-        $cachePool->addTag('cache.pool');
-        $container->setDefinition('app.cache_pool', $cachePool);
-
-        $this->cachePoolPass->process($container);
-
-        $this->assertCount(0, $container->getDefinition('app.cache_pool')->getArguments());
+        yield [ArrayAdapter::class];
+        yield [NullAdapter::class];
+        yield [TagAwareAdapter::class];
     }
 
     public function testArgsAreReplaced()
