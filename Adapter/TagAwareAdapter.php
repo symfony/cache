@@ -378,7 +378,7 @@ class TagAwareAdapter implements TagAwareAdapterInterface, TagAwareCacheInterfac
             (self::$saveTags)($this->tags, $newTags);
         }
 
-        while ($now > ($this->knownTagVersions[$tag = array_key_first($this->knownTagVersions)][0] ?? \INF)) {
+        while ($now > ($this->knownTagVersions[$tag = array_key_first($this->knownTagVersions) ?? ''][0] ?? \INF)) {
             unset($this->knownTagVersions[$tag]);
         }
 
