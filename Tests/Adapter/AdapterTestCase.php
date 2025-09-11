@@ -399,7 +399,7 @@ abstract class AdapterTestCase extends CachePoolTest
 
 class NotUnserializable
 {
-    public function __wakeup(): void
+    public function __unserialize(array $data): void
     {
         throw new \Exception(__CLASS__);
     }
