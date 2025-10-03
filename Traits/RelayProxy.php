@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Cache\Traits;
 
+use Symfony\Component\Cache\Traits\Relay\Relay12Trait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -27,6 +28,7 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     use RedisProxyTrait {
         resetLazyObject as reset;
     }
+    use Relay12Trait;
 
     public function __construct($host = null, $port = 6379, $connect_timeout = 0.0, $command_timeout = 0.0, #[\SensitiveParameter] $context = [], $database = 0)
     {

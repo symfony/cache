@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Cache\Traits;
 
+use Symfony\Component\Cache\Traits\Relay\WaitaofTrait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -27,6 +28,7 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
     use RedisProxyTrait {
         resetLazyObject as reset;
     }
+    use WaitaofTrait;
 
     public function __construct($name, $seeds = null, $connect_timeout = 0, $command_timeout = 0, $persistent = false, #[\SensitiveParameter] $auth = null, $context = null)
     {
@@ -1006,11 +1008,6 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
     public function unwatch(): \Relay\Cluster|bool
     {
         return $this->initializeLazyObject()->unwatch(...\func_get_args());
-    }
-
-    public function waitaof($key_or_address, $numlocal, $numremote, $timeout): \Relay\Relay|array|false
-    {
-        return $this->initializeLazyObject()->waitaof(...\func_get_args());
     }
 
     public function watch($key, ...$other_keys): \Relay\Cluster|bool
