@@ -13,6 +13,7 @@ namespace Symfony\Component\Cache\Traits;
 
 use Relay\Cluster;
 use Relay\Relay;
+use Symfony\Component\Cache\Traits\Relay\WaitaofTrait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -29,6 +30,7 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
     use RedisProxyTrait {
         resetLazyObject as reset;
     }
+    use WaitaofTrait;
 
     public function __construct(
         ?string $name,
@@ -185,11 +187,6 @@ class RelayClusterProxy extends Cluster implements ResetInterface, LazyObjectInt
     public function dbsize(array|string $key_or_address): Cluster|int|false
     {
         return $this->initializeLazyObject()->dbsize(...\func_get_args());
-    }
-
-    public function waitaof(array|string $key_or_address, int $numlocal, int $numremote, int $timeout): Relay|array|false
-    {
-        return $this->initializeLazyObject()->waitaof(...\func_get_args());
     }
 
     public function restore(mixed $key, int $ttl, string $value, ?array $options = null): Cluster|bool
