@@ -20,11 +20,6 @@ if (version_compare(phpversion('relay'), '0.12.0', '>=')) {
      */
     trait WaitaofTrait
     {
-
-        public function waitaof(array|string $key_or_address, int $numlocal, int $numremote, int $timeout): Cluster|array|false
-        {
-            return $this->initializeLazyObject()->waitaof(...\func_get_args());
-        }
     }
 } else {
     /**
