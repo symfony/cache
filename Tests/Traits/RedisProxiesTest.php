@@ -135,7 +135,7 @@ class RedisProxiesTest extends TestCase
         $expectedMethods = [];
 
         foreach ((new \ReflectionClass(RelayClusterProxy::class))->getMethods() as $method) {
-            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isStatic()) {
+            if ('reset' === $method->name || method_exists(RedisProxyTrait::class, $method->name) || $method->isInternal()) {
                 continue;
             }
 
