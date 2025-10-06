@@ -252,7 +252,7 @@ trait RedisTrait
                     }
 
                     try {
-                        if (version_compare(phpversion('redis'), '6.0.0', '>=') && $isRedisExt) {
+                        if ($isRedisExt) {
                             $options = [
                                 'host' => $host,
                                 'port' => $port,
@@ -351,10 +351,6 @@ trait RedisTrait
                 $redis->setOption($isRedisExt ? \Redis::OPT_TCP_KEEPALIVE : Relay::OPT_TCP_KEEPALIVE, $params['tcp_keepalive']);
             }
         } elseif (is_a($class, RelayCluster::class, true)) {
-            if (version_compare(phpversion('relay'), '0.10.0', '<')) {
-                throw new InvalidArgumentException('Using RelayCluster is supported from ext-relay 0.10.0 or higher.');
-            }
-
             $initializer = static function () use ($class, $params, $hosts) {
                 foreach ($hosts as $i => $host) {
                     $hosts[$i] = match ($host['scheme']) {
