@@ -453,6 +453,11 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
         return $this->initializeLazyObject()->hget(...\func_get_args());
     }
 
+    public function hgetWithMeta($hash, $member): \Relay\Cluster|array|false
+    {
+        return $this->initializeLazyObject()->getWithMeta(...\func_get_args());
+    }
+
     public function hgetall($key): \Relay\Cluster|array|false
     {
         return $this->initializeLazyObject()->hgetall(...\func_get_args());
