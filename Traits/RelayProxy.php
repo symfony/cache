@@ -23,6 +23,7 @@ use Symfony\Component\Cache\Traits\Relay\MoveTrait;
 use Symfony\Component\Cache\Traits\Relay\NullableReturnTrait;
 use Symfony\Component\Cache\Traits\Relay\PfcountTrait;
 use Symfony\Component\Cache\Traits\Relay\Relay11Trait;
+use Symfony\Component\Cache\Traits\Relay\Relay121Trait;
 use Symfony\Component\Cache\Traits\Relay\Relay12Trait;
 use Symfony\Component\Cache\Traits\Relay\SwapdbTrait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
@@ -56,6 +57,7 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     use RelayProxyTrait;
     use Relay11Trait;
     use Relay12Trait;
+    use Relay121Trait;
     use SwapdbTrait;
 
     private const LAZY_OBJECT_PROPERTY_SCOPES = [];
@@ -248,11 +250,6 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     public function rawCommand($cmd, ...$args): mixed
     {
         return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->rawCommand(...\func_get_args());
-    }
-
-    public function select($db): \Relay\Relay|bool
-    {
-        return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->select(...\func_get_args());
     }
 
     public function auth(#[\SensitiveParameter] $auth): bool
@@ -938,11 +935,6 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     public function wait($replicas, $timeout): \Relay\Relay|false|int
     {
         return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->wait(...\func_get_args());
-    }
-
-    public function watch($key, ...$other_keys): \Relay\Relay|bool
-    {
-        return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->watch(...\func_get_args());
     }
 
     public function unwatch(): \Relay\Relay|bool
