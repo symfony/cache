@@ -25,7 +25,8 @@ class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);
  */
 class RedisCluster6Proxy extends \RedisCluster implements ResetInterface, LazyObjectInterface
 {
-    use RedisCluster6ProxyTrait;
+    use RedisCluster61ProxyTrait;
+    use RedisCluster62ProxyTrait;
     use LazyProxyTrait {
         resetLazyObject as reset;
     }
