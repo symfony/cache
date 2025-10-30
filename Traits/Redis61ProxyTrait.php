@@ -15,7 +15,7 @@ if (version_compare(phpversion('redis'), '6.1.0-dev', '>=')) {
     /**
      * @internal
      */
-    trait Redis6ProxyTrait
+    trait Redis61ProxyTrait
     {
         public function dump($key): \Redis|string|false
         {
@@ -51,7 +51,7 @@ if (version_compare(phpversion('redis'), '6.1.0-dev', '>=')) {
     /**
      * @internal
      */
-    trait Redis6ProxyTrait
+    trait Redis61ProxyTrait
     {
         public function dump($key): \Redis|string
         {
