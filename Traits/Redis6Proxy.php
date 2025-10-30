@@ -27,6 +27,7 @@ class Redis6Proxy extends \Redis implements ResetInterface, LazyObjectInterface
 {
     use Redis61ProxyTrait;
     use Redis62ProxyTrait;
+    use Redis63ProxyTrait;
     use LazyProxyTrait {
         resetLazyObject as reset;
     }
