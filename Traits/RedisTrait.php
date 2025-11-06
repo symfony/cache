@@ -193,7 +193,7 @@ trait RedisTrait
         }
 
         if (isset($params['sentinel']) && !class_exists(\Predis\Client::class) && !class_exists(\RedisSentinel::class) && !class_exists(Sentinel::class)) {
-            throw new CacheException('Redis Sentinel support requires one of: "predis/predis", "ext-redis >= 5.2", "ext-relay".');
+            throw new CacheException('Redis Sentinel support requires one of: "predis/predis", "ext-redis >= 6.1", "ext-relay".');
         }
 
         foreach (['lazy', 'persistent', 'cluster'] as $option) {
@@ -224,7 +224,7 @@ trait RedisTrait
         };
 
         if (isset($params['sentinel']) && !is_a($class, \Predis\Client::class, true) && !class_exists(\RedisSentinel::class) && !class_exists(Sentinel::class)) {
-            throw new CacheException(\sprintf('Cannot use Redis Sentinel: class "%s" does not extend "Predis\Client" and neither ext-redis >= 5.2 nor ext-relay have been found.', $class));
+            throw new CacheException(\sprintf('Cannot use Redis Sentinel: class "%s" does not extend "Predis\Client" and neither ext-redis >= 6.1 nor ext-relay have been found.', $class));
         }
 
         $isRedisExt = is_a($class, \Redis::class, true);
