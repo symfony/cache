@@ -26,6 +26,7 @@ class RedisCluster6Proxy extends \RedisCluster implements ResetInterface, LazyOb
 {
     use RedisCluster61ProxyTrait;
     use RedisCluster62ProxyTrait;
+    use RedisCluster63ProxyTrait;
     use RedisProxyTrait {
         resetLazyObject as reset;
     }
