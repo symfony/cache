@@ -35,6 +35,11 @@ final class EarlyExpirationMessage
 
         $pool = $reverseContainer->getId($pool);
 
+        if ($callback instanceof \Closure && !str_contains(($r = new \ReflectionFunction($callback))->name, '{closure')) {
+            $callback = [$r->getClosureThis() ?? (\PHP_VERSION_ID >= 80111 ? $r->getClosureCalledClass() : $r->getClosureScopeClass())?->name, $r->name];
+            $callback[0] ?: $callback = $r->name;
+        }
+
         if (\is_object($callback)) {
             if (null === $id = $reverseContainer->getId($callback)) {
                 return null;
