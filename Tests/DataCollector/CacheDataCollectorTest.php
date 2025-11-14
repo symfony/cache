@@ -86,6 +86,46 @@ class CacheDataCollectorTest extends TestCase
         $this->assertSame(1, $statistics[self::INSTANCE_NAME]['writes'], 'writes');
     }
 
+    public function testSaveDeferredEventWithoutExplicitCommitDataCollector()
+    {
+        $traceableAdapterEvent = new \stdClass();
+        $traceableAdapterEvent->name = 'saveDeferred';
+        $traceableAdapterEvent->start = 0;
+        $traceableAdapterEvent->end = 0;
+
+        $statistics = $this->getCacheDataCollectorStatisticsFromEvents([$traceableAdapterEvent]);
+
+        $this->assertSame(1, $statistics[self::INSTANCE_NAME]['calls'], 'calls');
+        $this->assertSame(0, $statistics[self::INSTANCE_NAME]['reads'], 'reads');
+        $this->assertSame(0, $statistics[self::INSTANCE_NAME]['hits'], 'hits');
+        $this->assertSame(0, $statistics[self::INSTANCE_NAME]['misses'], 'misses');
+        $this->assertSame(1, $statistics[self::INSTANCE_NAME]['writes'], 'writes');
+    }
+
+    public function testSaveDeferredEventWithExplicitCommitDataCollector()
+    {
+        $traceableAdapterSaveDeferredEvent = new \stdClass();
+        $traceableAdapterSaveDeferredEvent->name = 'saveDeferred';
+        $traceableAdapterSaveDeferredEvent->start = 0;
+        $traceableAdapterSaveDeferredEvent->end = 0;
+
+        $traceableAdapterCommitEvent = new \stdClass();
+        $traceableAdapterCommitEvent->name = 'commit';
+        $traceableAdapterCommitEvent->start = 0;
+        $traceableAdapterCommitEvent->end = 0;
+
+        $statistics = $this->getCacheDataCollectorStatisticsFromEvents([
+            $traceableAdapterSaveDeferredEvent,
+            $traceableAdapterCommitEvent,
+        ]);
+
+        $this->assertSame(2, $statistics[self::INSTANCE_NAME]['calls'], 'calls');
+        $this->assertSame(0, $statistics[self::INSTANCE_NAME]['reads'], 'reads');
+        $this->assertSame(0, $statistics[self::INSTANCE_NAME]['hits'], 'hits');
+        $this->assertSame(0, $statistics[self::INSTANCE_NAME]['misses'], 'misses');
+        $this->assertSame(1, $statistics[self::INSTANCE_NAME]['writes'], 'writes');
+    }
+
     public function testCollectBeforeEnd()
     {
         $adapter = new TraceableAdapter(new NullAdapter());
