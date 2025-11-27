@@ -25,6 +25,7 @@ use Symfony\Component\Cache\Traits\Relay\PfcountTrait;
 use Symfony\Component\Cache\Traits\Relay\Relay11Trait;
 use Symfony\Component\Cache\Traits\Relay\Relay121Trait;
 use Symfony\Component\Cache\Traits\Relay\Relay12Trait;
+use Symfony\Component\Cache\Traits\Relay\Relay20Trait;
 use Symfony\Component\Cache\Traits\Relay\SwapdbTrait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Component\VarExporter\LazyProxyTrait;
@@ -58,6 +59,7 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     use Relay11Trait;
     use Relay12Trait;
     use Relay121Trait;
+    use Relay20Trait;
     use SwapdbTrait;
 
     private const LAZY_OBJECT_PROPERTY_SCOPES = [];
