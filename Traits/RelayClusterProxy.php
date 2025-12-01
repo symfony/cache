@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Cache\Traits;
 
+use Symfony\Component\Cache\Traits\Relay\RelayCluster20Trait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -27,6 +28,7 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
     use RedisProxyTrait {
         resetLazyObject as reset;
     }
+    use RelayCluster20Trait;
 
     public function __construct($name, $seeds = null, $connect_timeout = 0, $command_timeout = 0, $persistent = false, #[\SensitiveParameter] $auth = null, $context = null)
     {
