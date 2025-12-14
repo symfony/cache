@@ -50,7 +50,7 @@ class ProxyAdapterAndRedisAdapterTest extends AbstractRedisAdapterTestCase
 
         $cache = $this->createCachePool(1);
         $cache->clear();
-        $value = rand();
+        $value = random_int(0, getrandmax());
         $item = $cache->getItem('foo');
         $setCacheItemExpiry($item, 0);
         $cache->save($item->set($value));
