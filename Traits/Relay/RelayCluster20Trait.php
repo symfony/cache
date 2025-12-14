@@ -27,7 +27,7 @@ if (version_compare(phpversion('relay'), '0.20.0', '>=')) {
             return $this->initializeLazyObject()->delex(...\func_get_args());
         }
 
-        public function digest($key): \Relay\Cluster|false|null|string
+        public function digest($key): \Relay\Cluster|false|string|null
         {
             return $this->initializeLazyObject()->digest(...\func_get_args());
         }
