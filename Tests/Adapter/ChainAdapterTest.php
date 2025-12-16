@@ -231,7 +231,7 @@ class ChainAdapterTest extends AdapterTestCase
             ->willReturn(true);
 
         $cache = new ChainAdapter([$adapter1, $adapter2], 6);
-        $cache->get('test_key', function (ItemInterface $item) {
+        $cache->get('test_key', static function (ItemInterface $item) {
             $item->expiresAfter(15);
 
             return 'chain';

@@ -59,7 +59,7 @@ class EarlyExpirationDispatcherTest extends TestCase
         $dispatcher = new EarlyExpirationDispatcher($bus, $reverseContainer);
 
         $saveResult = null;
-        $pool->setCallbackWrapper(function (callable $callback, CacheItem $item, bool &$save, AdapterInterface $pool, \Closure $setMetadata, ?LoggerInterface $logger) use ($dispatcher, &$saveResult) {
+        $pool->setCallbackWrapper(static function (callable $callback, CacheItem $item, bool &$save, AdapterInterface $pool, \Closure $setMetadata, ?LoggerInterface $logger) use ($dispatcher, &$saveResult) {
             try {
                 return $dispatcher($callback, $item, $save, $pool, $setMetadata, $logger);
             } finally {
@@ -67,7 +67,7 @@ class EarlyExpirationDispatcherTest extends TestCase
             }
         });
 
-        $this->assertSame(345, $pool->get('foo', fn () => 345));
+        $this->assertSame(345, $pool->get('foo', static fn () => 345));
         $this->assertTrue($saveResult);
 
         $expected = [
@@ -113,7 +113,7 @@ class EarlyExpirationDispatcherTest extends TestCase
         $dispatcher = new EarlyExpirationDispatcher($bus, $reverseContainer);
 
         $saveResult = true;
-        $setMetadata = function () {
+        $setMetadata = static function () {
         };
         $dispatcher($computationService, $item, $saveResult, $pool, $setMetadata, $logger);
 

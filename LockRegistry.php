@@ -96,7 +96,7 @@ final class LockRegistry
         }
 
         self::$signalingException ??= unserialize("O:9:\"Exception\":1:{s:16:\"\0Exception\0trace\";a:0:{}}");
-        self::$signalingCallback ??= fn () => throw self::$signalingException;
+        self::$signalingCallback ??= static fn () => throw self::$signalingException;
 
         while (true) {
             try {

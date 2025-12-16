@@ -83,7 +83,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema = new Schema();
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, fn () => true);
+        $adapter->configureSchema($schema, $connection, static fn () => true);
         $this->assertTrue($schema->hasTable('cache_items'));
     }
 
@@ -97,7 +97,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema = new Schema();
 
         $adapter = $this->createCachePool();
-        $adapter->configureSchema($schema, $otherConnection, fn () => false);
+        $adapter->configureSchema($schema, $otherConnection, static fn () => false);
         $this->assertFalse($schema->hasTable('cache_items'));
     }
 
@@ -112,7 +112,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema->createTable('cache_items');
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, fn () => true);
+        $adapter->configureSchema($schema, $connection, static fn () => true);
         $table = $schema->getTable('cache_items');
         $this->assertSame([], $table->getColumns(), 'The table was not overwritten');
     }
