@@ -266,4 +266,28 @@ class ChainAdapterTest extends AdapterTestCase
     {
         return $this->createMock(AdapterInterface::class);
     }
+
+    public function testSetCallbackWrapperPropagation()
+    {
+        $adapter1 = new ArrayAdapter();
+        $adapter2 = new FilesystemAdapter();
+
+        $chain = new ChainAdapter([$adapter1, $adapter2]);
+
+        $callbackWrapperCalled = false;
+        $customWrapper = static function (callable $callback, CacheItem $item, bool &$save) use (&$callbackWrapperCalled) {
+            $callbackWrapperCalled = true;
+
+            return $callback($item, $save);
+        };
+
+        $chain->setCallbackWrapper($customWrapper);
+
+        $chain->delete('test-callback-wrapper');
+
+        $result = $chain->get('test-callback-wrapper', static fn () => 'computed-value');
+
+        $this->assertTrue($callbackWrapperCalled);
+        $this->assertSame('computed-value', $result);
+    }
 }
