@@ -324,7 +324,17 @@ class PdoAdapter extends AbstractAdapter implements PruneableInterface
             $insertStmt->bindValue(':time', $now, \PDO::PARAM_INT);
         }
 
+        if ('sqlsrv' === $driver) {
+            $dataStream = fopen('php://memory', 'r+');
+        }
         foreach ($values as $id => $data) {
+            if ('sqlsrv' === $driver) {
+                rewind($dataStream);
+                fwrite($dataStream, $data);
+                ftruncate($dataStream, \strlen($data));
+                rewind($dataStream);
+                $data = $dataStream;
+            }
             try {
                 $stmt->execute();
             } catch (\PDOException $e) {
