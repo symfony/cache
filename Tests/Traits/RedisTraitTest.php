@@ -21,6 +21,15 @@ use Symfony\Component\Cache\Traits\RedisTrait;
 #[RequiresPhpExtension('redis')]
 class RedisTraitTest extends TestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        try {
+            (new \Redis())->connect(...explode(':', getenv('REDIS_HOST')));
+        } catch (\Exception $e) {
+            self::markTestSkipped(getenv('REDIS_HOST').': '.$e->getMessage());
+        }
+    }
+
     #[DataProvider('provideCreateConnection')]
     public function testCreateConnection(string $dsn, string $expectedClass)
     {
@@ -87,12 +96,6 @@ class RedisTraitTest extends TestCase
     #[Group('integration')]
     public function testPconnectSelectsCorrectDatabase()
     {
-        if (!class_exists(\Redis::class)) {
-            self::markTestSkipped('The "Redis" class is required.');
-        }
-        if (!getenv('REDIS_HOST')) {
-            self::markTestSkipped('REDIS_HOST env var is not defined.');
-        }
         if (!\ini_get('redis.pconnect.pooling_enabled')) {
             self::markTestSkipped('The bug only occurs when pooling is enabled.');
         }
