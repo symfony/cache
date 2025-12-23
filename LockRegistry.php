@@ -83,7 +83,7 @@ final class LockRegistry
         return $previousFiles;
     }
 
-    public static function compute(callable $callback, ItemInterface $item, bool &$save, CacheInterface $pool, ?\Closure $setMetadata = null, ?LoggerInterface $logger = null): mixed
+    public static function compute(callable $callback, ItemInterface $item, bool &$save, CacheInterface $pool, ?\Closure $setMetadata = null, ?LoggerInterface $logger = null, ?float $beta = null): mixed
     {
         if ('\\' === \DIRECTORY_SEPARATOR && null === self::$lockedFiles) {
             // disable locking on Windows by default
@@ -124,6 +124,11 @@ final class LockRegistry
                 // if we failed the race, retry locking in blocking mode to wait for the winner
                 $logger?->info('Item "{key}" is locked, waiting for it to be released', ['key' => $item->getKey()]);
                 flock($lock, \LOCK_SH);
+
+                if (\INF === $beta) {
+                    $logger?->info('Force-recomputing item "{key}"', ['key' => $item->getKey()]);
+                    continue;
+                }
             } finally {
                 flock($lock, \LOCK_UN);
                 unset(self::$lockedFiles[$key]);
