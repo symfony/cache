@@ -18,6 +18,7 @@ use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\ParameterNormalizer;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Cache\Messenger\EarlyExpirationDispatcher;
+use Symfony\Component\Cache\PruneableInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -52,6 +53,7 @@ class CachePoolPass implements CompilerPassInterface
             'default_lifetime',
             'early_expiration_message_bus',
             'reset',
+            'pruneable',
         ];
         foreach ($container->findTaggedServiceIds('cache.pool') as $id => $tags) {
             $adapter = $pool = $container->getDefinition($id);
@@ -90,6 +92,8 @@ class CachePoolPass implements CompilerPassInterface
             if (isset($tags[0]['provider'])) {
                 $tags[0]['provider'] = new Reference(static::getServiceProvider($container, $tags[0]['provider']));
             }
+
+            $pruneable = $tags[0]['pruneable'] ?? $container->getReflectionClass($class, false)?->implementsInterface(PruneableInterface::class) ?? false;
 
             if (ChainAdapter::class === $class) {
                 $adapters = [];
@@ -157,6 +161,8 @@ class CachePoolPass implements CompilerPassInterface
                         ),
                     ]);
                     $pool->addTag('container.reversible');
+                } elseif ('pruneable' === $attr) {
+                    // no-op
                 } elseif ('namespace' !== $attr || !\in_array($class, [ArrayAdapter::class, NullAdapter::class, TagAwareAdapter::class], true)) {
                     $argument = $tags[0][$attr];
 
@@ -170,12 +176,16 @@ class CachePoolPass implements CompilerPassInterface
                 unset($tags[0][$attr]);
             }
             if (!empty($tags[0])) {
-                throw new InvalidArgumentException(\sprintf('Invalid "cache.pool" tag for service "%s": accepted attributes are "clearer", "provider", "name", "namespace", "default_lifetime", "early_expiration_message_bus" and "reset", found "%s".', $id, implode('", "', array_keys($tags[0]))));
+                throw new InvalidArgumentException(\sprintf('Invalid "cache.pool" tag for service "%s": accepted attributes are "clearer", "provider", "name", "namespace", "default_lifetime", "early_expiration_message_bus", "reset" and "pruneable", found "%s".', $id, implode('", "', array_keys($tags[0]))));
             }
 
             if (null !== $clearer) {
                 $clearers[$clearer][$name] = new Reference($id, $container::IGNORE_ON_UNINITIALIZED_REFERENCE);
             }
+
+            $poolTags = $pool->getTags();
+            $poolTags['cache.pool'][0]['pruneable'] ??= $pruneable;
+            $pool->setTags($poolTags);
 
             $allPools[$name] = new Reference($id, $container::IGNORE_ON_UNINITIALIZED_REFERENCE);
         }
