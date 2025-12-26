@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ApcuAdapter;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\ChainAdapter;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
@@ -229,6 +230,35 @@ class CachePoolPassTest extends TestCase
         $doctrineCachePool = $container->getDefinition('doctrine.result_cache_pool');
         $this->assertInstanceOf(ChildDefinition::class, $doctrineCachePool);
         $this->assertSame('cache.app', $doctrineCachePool->getParent());
+    }
+
+    public function testChainChildDefinitionGetsOwnNamespace()
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('cache.prefix.seed', 'test');
+
+        $container->register('cache.adapter.filesystem', FilesystemAdapter::class)
+            ->setAbstract(true)
+            ->setArguments([null, 0, null]);
+        $container->register('cache.adapter.chain', ChainAdapter::class)
+            ->setAbstract(true);
+
+        $container->setDefinition('cache.parent.chain', (new ChildDefinition('cache.adapter.chain')))
+            ->addArgument(['cache.adapter.filesystem'])
+            ->addTag('cache.pool');
+
+        $container->setDefinition('foobar.chained.cache', (new ChildDefinition('cache.parent.chain')))
+            ->addTag('cache.pool');
+
+        $this->cachePoolPass->process($container);
+
+        $parentChain = $container->getDefinition('cache.parent.chain');
+        $childChain = $container->getDefinition('foobar.chained.cache');
+
+        $parentNamespace = $parentChain->getArgument(0)[0]->getArgument(0);
+        $childNamespace = $childChain->getArgument(0)[0]->getArgument(0);
+
+        $this->assertNotSame($parentNamespace, $childNamespace);
     }
 
     public function testGlobalClearerAlias()

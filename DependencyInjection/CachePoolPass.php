@@ -99,7 +99,7 @@ class CachePoolPass implements CompilerPassInterface
                 $adapters = [];
                 foreach ($providers['index_0'] ?? $providers[0] as $provider => $adapter) {
                     if ($adapter instanceof ChildDefinition) {
-                        $chainedPool = $adapter;
+                        $chainedPool = clone $adapter;
                     } else {
                         $chainedPool = $adapter = new ChildDefinition($adapter);
                     }
