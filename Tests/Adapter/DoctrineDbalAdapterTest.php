@@ -57,7 +57,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
             $this->markTestSkipped('doctrine/dbal v2 does not support custom drivers using middleware');
         }
 
-        $middleware = $this->createMock(Middleware::class);
+        $middleware = $this->createStub(Middleware::class);
         $middleware
             ->method('wrap')
             ->willReturn(new DriverWrapper($connection->getDriver()));
@@ -95,7 +95,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
             @unlink(self::$dbFile);
         }
 
-        $otherConnection = $this->createConnectionMock();
+        $otherConnection = $this->createConnection();
         $schema = new Schema();
 
         $adapter = $this->createCachePool();
@@ -180,11 +180,11 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         return 1 !== (int) $result->fetchOne();
     }
 
-    private function createConnectionMock()
+    private function createConnection(): Connection
     {
-        $connection = $this->createMock(Connection::class);
-        $driver = $this->createMock(AbstractMySQLDriver::class);
-        $connection->expects($this->any())
+        $connection = $this->createStub(Connection::class);
+        $driver = $this->createStub(AbstractMySQLDriver::class);
+        $connection
             ->method('getDriver')
             ->willReturn($driver);
 
