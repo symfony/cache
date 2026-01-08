@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\ReverseContainer;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class EarlyExpirationDispatcherTest extends TestCase
@@ -54,9 +55,7 @@ class EarlyExpirationDispatcherTest extends TestCase
 
         $reverseContainer = new ReverseContainer($container, new ServiceLocator([]));
 
-        $bus = $this->createMock(MessageBusInterface::class);
-
-        $dispatcher = new EarlyExpirationDispatcher($bus, $reverseContainer);
+        $dispatcher = new EarlyExpirationDispatcher(new MessageBus(), $reverseContainer);
 
         $saveResult = null;
         $pool->setCallbackWrapper(static function (callable $callback, CacheItem $item, bool &$save, AdapterInterface $pool, \Closure $setMetadata, ?LoggerInterface $logger) use ($dispatcher, &$saveResult) {
