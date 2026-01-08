@@ -66,7 +66,7 @@ class ChainAdapterTest extends AdapterTestCase
 
         $cache = new ChainAdapter([
             $this->getPruneableMock(),
-            $this->getNonPruneableMock(),
+            $this->createStub(AdapterInterface::class),
             $this->getPruneableMock(),
         ]);
         $this->assertTrue($cache->prune());
@@ -260,11 +260,6 @@ class ChainAdapterTest extends AdapterTestCase
             ->willReturn(false);
 
         return $pruneable;
-    }
-
-    private function getNonPruneableMock(): AdapterInterface
-    {
-        return $this->createMock(AdapterInterface::class);
     }
 
     public function testSetCallbackWrapperPropagation()
