@@ -177,6 +177,22 @@ trait RedisTrait
         $params += $query + $options + self::$defaultConnectionOptions;
         $params['auth'] ??= $auth;
 
+        $booleanStreamOptions = [
+            'allow_self_signed',
+            'capture_peer_cert',
+            'capture_peer_cert_chain',
+            'disable_compression',
+            'SNI_enabled',
+            'verify_peer',
+            'verify_peer_name',
+        ];
+
+        foreach ($params['ssl'] ?? [] as $streamOption => $value) {
+            if (\in_array($streamOption, $booleanStreamOptions, true) && \is_string($value)) {
+                $params['ssl'][$streamOption] = filter_var($value, \FILTER_VALIDATE_BOOL);
+            }
+        }
+
         if (isset($params['redis_sentinel']) && !class_exists(\Predis\Client::class) && !class_exists(\RedisSentinel::class) && !class_exists(Sentinel::class)) {
             throw new CacheException('Redis Sentinel support requires one of: "predis/predis", "ext-redis >= 5.2", "ext-relay".');
         }
@@ -246,6 +262,10 @@ trait RedisTrait
                                 $options['auth'] = $params['auth'];
                             }
 
+                            if (null !== $params['ssl'] && version_compare(phpversion('redis'), '6.2.0', '>=')) {
+                                $options['ssl'] = $params['ssl'];
+                            }
+
                             $sentinel = new \RedisSentinel($options);
                         } else {
                             $extra = $passAuth ? [$params['auth']] : [];
@@ -268,21 +288,6 @@ trait RedisTrait
                     $extra = [
                         'stream' => $params['ssl'] ?? null,
                     ];
-                    $booleanStreamOptions = [
-                        'allow_self_signed',
-                        'capture_peer_cert',
-                        'capture_peer_cert_chain',
-                        'disable_compression',
-                        'SNI_enabled',
-                        'verify_peer',
-                        'verify_peer_name',
-                    ];
-
-                    foreach ($extra['stream'] ?? [] as $streamOption => $value) {
-                        if (\in_array($streamOption, $booleanStreamOptions, true) && \is_string($value)) {
-                            $extra['stream'][$streamOption] = filter_var($value, \FILTER_VALIDATE_BOOL);
-                        }
-                    }
 
                     if (null !== $params['auth']) {
                         $extra['auth'] = $params['auth'];
