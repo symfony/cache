@@ -175,7 +175,6 @@ trait RedisTrait
         }
 
         $params += $query + $options + self::$defaultConnectionOptions;
-        $params['auth'] ??= $auth;
 
         $booleanStreamOptions = [
             'allow_self_signed',
@@ -393,12 +392,12 @@ trait RedisTrait
             if ($params['dbindex']) {
                 $params['parameters']['database'] = $params['dbindex'];
             }
-            if (\is_array($params['auth'])) {
+            if (\is_array($auth)) {
                 // ACL
-                $params['parameters']['username'] = $params['auth'][0];
-                $params['parameters']['password'] = $params['auth'][1];
-            } elseif (null !== $params['auth']) {
-                $params['parameters']['password'] = $params['auth'];
+                $params['parameters']['username'] = $auth[0];
+                $params['parameters']['password'] = $auth[1];
+            } elseif (null !== $auth) {
+                $params['parameters']['password'] = $auth;
             }
 
             if (isset($params['ssl'])) {
