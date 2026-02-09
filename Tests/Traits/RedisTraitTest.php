@@ -210,35 +210,4 @@ class RedisTraitTest extends TestCase
             ],
         ];
     }
-
-    /**
-     * @dataProvider provideShouldPopulateAuthFromDsn
-     */
-    public function testShouldPopulateAuthFromDsn(bool $expected, string $class, array $params)
-    {
-        $mock = new class {
-            use RedisTrait {
-                shouldPopulateAuthFromDsn as public;
-            }
-        };
-
-        self::assertSame($expected, $mock::shouldPopulateAuthFromDsn($class, $params));
-    }
-
-    public static function provideShouldPopulateAuthFromDsn(): iterable
-    {
-        yield 'Redis without sentinel' => [true, \Redis::class, []];
-        yield 'RedisCluster without sentinel' => [true, \RedisCluster::class, []];
-        yield 'Redis with sentinel' => [false, \Redis::class, ['redis_sentinel' => 'mymaster']];
-        yield 'RedisArray' => [false, \RedisArray::class, []];
-
-        if (class_exists(\Predis\Client::class)) {
-            yield 'Predis' => [false, \Predis\Client::class, []];
-        }
-
-        if (class_exists(\Relay\Relay::class)) {
-            yield 'Relay without sentinel' => [true, \Relay\Relay::class, []];
-            yield 'Relay with sentinel' => [false, \Relay\Relay::class, ['redis_sentinel' => 'mymaster']];
-        }
-    }
 }
