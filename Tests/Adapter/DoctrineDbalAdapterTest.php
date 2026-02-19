@@ -16,6 +16,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\AbstractMySQLDriver;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\Schema;
 use Psr\Cache\CacheItemPoolInterface;
@@ -85,7 +86,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema = new Schema();
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, fn () => true);
+        $adapter->configureSchema($schema, $connection, static fn () => true);
         $this->assertTrue($schema->hasTable('cache_items'));
     }
 
@@ -99,7 +100,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema = new Schema();
 
         $adapter = $this->createCachePool();
-        $adapter->configureSchema($schema, $otherConnection, fn () => false);
+        $adapter->configureSchema($schema, $otherConnection, static fn () => false);
         $this->assertFalse($schema->hasTable('cache_items'));
     }
 
@@ -114,7 +115,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         $schema->createTable('cache_items');
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, fn () => true);
+        $adapter->configureSchema($schema, $connection, static fn () => true);
         $table = $schema->getTable('cache_items');
         $this->assertEmpty($table->getColumns(), 'The table was not overwritten');
     }
@@ -166,6 +167,49 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
             $pdo = new \PDO('pgsql:host='.$host.';user=postgres;password=password');
             $pdo->exec('DROP TABLE IF EXISTS cache_items');
         }
+    }
+
+    public function testSaveWithinActiveTransactionUsesSavepoint()
+    {
+        $dbFile = tempnam(sys_get_temp_dir(), 'sf_sqlite_savepoint');
+        try {
+            $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => $dbFile], $this->getDbalConfig());
+            $adapter = new DoctrineDbalAdapter($connection);
+            $adapter->createTable();
+
+            $connection->beginTransaction();
+            $item = $adapter->getItem('savepoint_key');
+            $item->set('savepoint_value');
+            $adapter->save($item);
+
+            $this->assertTrue($connection->isTransactionActive(), 'Outer transaction must still be active after cache save');
+            $connection->commit();
+
+            $this->assertSame('savepoint_value', $adapter->getItem('savepoint_key')->get());
+        } finally {
+            @unlink($dbFile);
+        }
+    }
+
+    public function testSavepointIsRolledBackOnFailure()
+    {
+        $platform = $this->createMock(AbstractPlatform::class);
+        $platform->method('supportsSavepoints')->willReturn(true);
+
+        $conn = $this->createMock(Connection::class);
+        $conn->method('isTransactionActive')->willReturn(true);
+        $conn->method('getDatabasePlatform')->willReturn($platform);
+        $conn->expects($this->once())->method('createSavepoint')->with($this->stringStartsWith('cache_save_'));
+        $conn->expects($this->once())->method('rollbackSavepoint')->with($this->stringStartsWith('cache_save_'));
+        $conn->expects($this->never())->method('releaseSavepoint');
+        $conn->method('prepare')->willThrowException(new \RuntimeException('DB error'));
+
+        $adapter = new DoctrineDbalAdapter($conn);
+
+        $doSave = new \ReflectionMethod($adapter, 'doSave');
+
+        $this->expectException(\RuntimeException::class);
+        $doSave->invoke($adapter, ['key' => 'value'], 0);
     }
 
     protected function isPruned(DoctrineDbalAdapter $cache, string $name): bool
