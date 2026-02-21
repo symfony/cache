@@ -188,7 +188,7 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
 
     public function testSavepointIsRolledBackOnFailure()
     {
-        $platform = $this->createMock(AbstractPlatform::class);
+        $platform = $this->createStub(AbstractPlatform::class);
         $platform->method('supportsSavepoints')->willReturn(true);
 
         $conn = $this->createMock(Connection::class);
