@@ -18,6 +18,7 @@ use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 use Symfony\Component\Cache\ResettableInterface;
+use Symfony\Component\VarExporter\DeepCloner;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
@@ -174,8 +175,12 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
                 return true;
             }
         }
-        if ($this->storeSerialized && null === $value = $this->freeze($value, $key)) {
-            return false;
+        if ($this->storeSerialized) {
+            try {
+                $value = $this->freeze($value, $key);
+            } catch (\ValueError) {
+                return false;
+            }
         }
         if (null === $expiry && 0 < $this->defaultLifetime) {
             $expiry = $this->defaultLifetime;
@@ -271,12 +276,10 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
 
         $values = $this->values;
         foreach ($values as $k => $v) {
-            if (null === $v || 'N;' === $v) {
+            if (null === $v) {
                 continue;
             }
-            if (!\is_string($v) || !isset($v[2]) || ':' !== $v[1]) {
-                $values[$k] = serialize($v);
-            }
+            $values[$k] = serialize($v instanceof DeepCloner ? $v->clone() : $v);
         }
 
         return $values;
@@ -324,57 +327,43 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
         }
     }
 
-    private function freeze($value, string $key): string|int|float|bool|array|\UnitEnum|null
+    /**
+     * @throws \ValueError When the value cannot be frozen
+     */
+    private function freeze(mixed $value, string $key): mixed
     {
-        if (null === $value) {
-            return 'N;';
-        }
-        if (\is_string($value)) {
-            // Serialize strings if they could be confused with serialized objects or arrays
-            if ('N;' === $value || (isset($value[2]) && ':' === $value[1])) {
-                return serialize($value);
+        try {
+            $cloner = new DeepCloner($value);
+        } catch (\Exception $e) {
+            if (!isset($this->expiries[$key])) {
+                unset($this->values[$key]);
             }
-        } elseif (!\is_scalar($value)) {
-            try {
-                $serialized = serialize($value);
-            } catch (\Exception $e) {
-                if (!isset($this->expiries[$key])) {
-                    unset($this->values[$key]);
-                }
-                $type = get_debug_type($value);
-                $message = \sprintf('Failed to save key "{key}" of type %s: %s', $type, $e->getMessage());
-                CacheItem::log($this->logger, $message, ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
+            $type = get_debug_type($value);
+            $message = \sprintf('Failed to save key "{key}" of type %s: %s', $type, $e->getMessage());
+            CacheItem::log($this->logger, $message, ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
 
-                return null;
-            }
-            // Keep value serialized if it contains any objects or any internal references
-            if ('C' === $serialized[0] || 'O' === $serialized[0] || preg_match('/;[OCRr]:[1-9]/', $serialized)) {
-                return $serialized;
-            }
+            throw new \ValueError();
         }
 
-        return $value;
+        return $cloner->isStaticValue() ? $value : $cloner;
     }
 
     private function unfreeze(string $key, bool &$isHit): mixed
     {
-        if ('N;' === $value = $this->values[$key]) {
-            return null;
-        }
-        if (\is_string($value) && isset($value[2]) && ':' === $value[1]) {
+        $value = $this->values[$key];
+
+        if ($value instanceof DeepCloner) {
             try {
-                $value = unserialize($value);
+                return $value->clone();
             } catch (\Exception $e) {
-                CacheItem::log($this->logger, 'Failed to unserialize key "{key}": '.$e->getMessage(), ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
-                $value = false;
-            }
-            if (false === $value) {
-                $value = null;
+                CacheItem::log($this->logger, 'Failed to clone key "{key}": '.$e->getMessage(), ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
                 $isHit = false;
 
                 if (!$this->maxItems) {
                     $this->values[$key] = null;
                 }
+
+                return null;
             }
         }
 
