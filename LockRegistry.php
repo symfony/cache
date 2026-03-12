@@ -84,6 +84,10 @@ final class LockRegistry
         return $previousFiles;
     }
 
+    /**
+     * @param-immediately-invoked-callable $callback
+     * @param-immediately-invoked-callable $setMetadata
+     */
     public static function compute(callable $callback, ItemInterface $item, bool &$save, CacheInterface $pool, ?\Closure $setMetadata = null, ?LoggerInterface $logger = null, ?float $beta = null): mixed
     {
         if ('\\' === \DIRECTORY_SEPARATOR && null === self::$lockedFiles) {

@@ -133,6 +133,9 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         }
     }
 
+    /**
+     * @param-immediately-invoked-callable $isSameDatabase
+     */
     public function configureSchema(Schema $schema, Connection $forConnection, \Closure $isSameDatabase): void
     {
         if ($schema->hasTable($this->table)) {
