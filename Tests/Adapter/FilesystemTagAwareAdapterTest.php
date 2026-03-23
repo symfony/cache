@@ -13,6 +13,7 @@ namespace Symfony\Component\Cache\Tests\Adapter;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
+use Symfony\Component\Cache\Tests\Fixtures\FailingTagFilesystemAdapter;
 
 /**
  * @group time-sensitive
@@ -24,5 +25,20 @@ class FilesystemTagAwareAdapterTest extends FilesystemAdapterTest
     public function createCachePool(int $defaultLifetime = 0): CacheItemPoolInterface
     {
         return new FilesystemTagAwareAdapter('', $defaultLifetime);
+    }
+
+    public function testCommitDoesNotFailWhenTagSaveFails()
+    {
+        $adapter = new FailingTagFilesystemAdapter();
+
+        $item = $adapter->getItem('foo');
+        $item->set('bar');
+        $item->tag(['tag1']);
+        $adapter->saveDeferred($item);
+
+        // Should not throw "Undefined array key" when tag save fails
+        $result = $adapter->commit();
+
+        $this->assertFalse($result, 'Commit should return false when tag save fails');
     }
 }
