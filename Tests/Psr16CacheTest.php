@@ -13,7 +13,9 @@ namespace Symfony\Component\Cache\Tests;
 
 use Cache\IntegrationTests\SimpleCacheTest;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Cache\PruneableInterface;
 use Symfony\Component\Cache\Psr16Cache;
 
@@ -171,6 +173,22 @@ class Psr16CacheTest extends SimpleCacheTest
         $getFileMethod = (new \ReflectionObject($pool))->getMethod('getFile');
 
         return !file_exists($getFileMethod->invoke($pool, $name));
+    }
+
+    public function testGetMultipleWithTagAwareAdapter()
+    {
+        $cache = new Psr16Cache(new TagAwareAdapter(new ArrayAdapter()));
+
+        $cache->set('foo', 'foo-val');
+        $cache->set('bar', 'bar-val');
+
+        // get() should return raw values
+        $this->assertSame('foo-val', $cache->get('foo'));
+        $this->assertSame('bar-val', $cache->get('bar'));
+
+        // getMultiple() should also return raw values, not ValueWrapper objects
+        $values = $cache->getMultiple(['foo', 'bar']);
+        $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], iterator_to_array($values));
     }
 }
 
