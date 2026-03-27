@@ -210,6 +210,11 @@ abstract class AbstractTagAwareAdapter implements TagAwareAdapterInterface, TagA
             if (\is_array($e) || 1 === \count($values)) {
                 foreach (\is_array($e) ? $e : array_keys($values) as $id) {
                     $ok = false;
+                    if (!isset($values[$id])) {
+                        $message = 'Failed to save tag "{key}"'.($e instanceof \Exception ? ': '.$e->getMessage() : '.');
+                        CacheItem::log($this->logger, $message, ['key' => substr($id, \strlen($this->rootNamespace)), 'exception' => $e instanceof \Exception ? $e : null, 'cache-adapter' => get_debug_type($this)]);
+                        continue;
+                    }
                     $v = $values[$id];
                     $type = get_debug_type($v);
                     $message = \sprintf('Failed to save key "{key}" of type %s%s', $type, $e instanceof \Exception ? ': '.$e->getMessage() : '.');
