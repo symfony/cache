@@ -182,13 +182,10 @@ class Psr16CacheTest extends SimpleCacheTest
         $cache->set('foo', 'foo-val');
         $cache->set('bar', 'bar-val');
 
-        // get() should return raw values
         $this->assertSame('foo-val', $cache->get('foo'));
         $this->assertSame('bar-val', $cache->get('bar'));
 
-        // getMultiple() should also return raw values, not ValueWrapper objects
-        $values = $cache->getMultiple(['foo', 'bar']);
-        $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], iterator_to_array($values));
+        $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], $cache->getMultiple(['foo', 'bar']));
     }
 }
 
