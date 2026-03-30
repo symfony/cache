@@ -35,9 +35,6 @@ class FilesystemTagAwareAdapterTest extends FilesystemAdapterTest
         $item->tag(['tag1']);
         $adapter->saveDeferred($item);
 
-        // Should not throw "Undefined array key" when tag save fails
-        $result = $adapter->commit();
-
-        $this->assertFalse($result, 'Commit should return false when tag save fails');
+        $this->assertFalse($adapter->commit(), 'Commit should return false when tag save fails');
     }
 }
