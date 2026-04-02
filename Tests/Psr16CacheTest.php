@@ -184,6 +184,19 @@ class Psr16CacheTest extends SimpleCacheTest
 
         $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], $cache->getMultiple(['foo', 'bar']));
     }
+
+    public function testGetMultipleWithTtl()
+    {
+        $cache = new Psr16Cache(new ArrayAdapter());
+
+        $cache->set('foo', 'foo-val', 60);
+        $cache->set('bar', 'bar-val', 60);
+
+        $this->assertSame('foo-val', $cache->get('foo'));
+        $this->assertSame('bar-val', $cache->get('bar'));
+
+        $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], iterator_to_array($cache->getMultiple(['foo', 'bar'])));
+    }
 }
 
 class NotUnserializable

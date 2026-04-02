@@ -69,9 +69,7 @@ class Psr16Cache implements CacheInterface, PruneableInterface, ResettableInterf
         };
         self::$packCacheItem ??= \Closure::bind(
             static function (CacheItem $item) {
-                // Only re-pack if there's timing metadata (for Psr16Adapter compatibility)
-                // Don't re-pack if only tags metadata exists (TagAwareAdapter direct use case)
-                if (!isset($item->metadata[ItemInterface::METADATA_CTIME]) && !isset($item->metadata[ItemInterface::METADATA_EXPIRY])) {
+                if (!isset($item->metadata[ItemInterface::METADATA_CTIME])) {
                     return $item->value;
                 }
 
