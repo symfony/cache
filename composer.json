@@ -21,7 +21,7 @@
         "symfony/cache-implementation": "1.1|2.0|3.0"
     },
     "require": {
-        "php": ">=8.4",
+        "php": ">=8.4.1",
         "psr/cache": "^2.0|^3.0",
         "psr/log": "^1.1|^2|^3",
         "symfony/cache-contracts": "^3.6",
