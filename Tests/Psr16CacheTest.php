@@ -198,7 +198,7 @@ class Psr16CacheTest extends SimpleCacheTest
         $this->assertSame('foo-val', $cache->get('foo'));
         $this->assertSame('bar-val', $cache->get('bar'));
 
-        $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], iterator_to_array($cache->getMultiple(['foo', 'bar'])));
+        $this->assertSame(['foo' => 'foo-val', 'bar' => 'bar-val'], $cache->getMultiple(['foo', 'bar']));
     }
 }
 
