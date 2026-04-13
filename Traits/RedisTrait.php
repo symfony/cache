@@ -341,7 +341,6 @@ trait RedisTrait
                         $e = preg_replace('/^ERR /', '', $redis->getLastError());
                         throw new InvalidArgumentException('Redis connection failed: '.$e.'.');
                     }
-
                 } catch (\RedisException|\Relay\Exception $e) {
                     throw new InvalidArgumentException('Redis connection failed: '.$e->getMessage());
                 }
