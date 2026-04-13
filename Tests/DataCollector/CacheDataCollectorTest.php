@@ -133,7 +133,7 @@ class CacheDataCollectorTest extends TestCase
         $collector = new CacheDataCollector();
         $collector->addInstance(self::INSTANCE_NAME, $adapter);
 
-        $adapter->get('foo', function () use ($collector) {
+        $adapter->get('foo', static function () use ($collector) {
             $collector->collect(new Request(), new Response());
 
             return 123;
@@ -152,7 +152,7 @@ class CacheDataCollectorTest extends TestCase
         $collector = new CacheDataCollector();
         $collector->addInstance(self::INSTANCE_NAME, $adapter);
 
-        $adapter->get('foo', function () use ($collector) {
+        $adapter->get('foo', static function () use ($collector) {
             $collector->lateCollect();
 
             return 123;
