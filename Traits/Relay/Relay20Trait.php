@@ -27,7 +27,7 @@ if (version_compare(phpversion('relay'), '0.20.0', '>=')) {
             return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->delex(...\func_get_args());
         }
 
-        public function digest($key): \Relay\Relay|false|null|string
+        public function digest($key): \Relay\Relay|false|string|null
         {
             return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->digest(...\func_get_args());
         }
