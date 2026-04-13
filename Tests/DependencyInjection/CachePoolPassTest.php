@@ -242,11 +242,11 @@ class CachePoolPassTest extends TestCase
         $container->register('cache.adapter.chain', ChainAdapter::class)
             ->setAbstract(true);
 
-        $container->setDefinition('cache.parent.chain', (new ChildDefinition('cache.adapter.chain')))
+        $container->setDefinition('cache.parent.chain', new ChildDefinition('cache.adapter.chain'))
             ->addArgument(['cache.adapter.filesystem'])
             ->addTag('cache.pool');
 
-        $container->setDefinition('foobar.chained.cache', (new ChildDefinition('cache.parent.chain')))
+        $container->setDefinition('foobar.chained.cache', new ChildDefinition('cache.parent.chain'))
             ->addTag('cache.pool');
 
         $this->cachePoolPass->process($container);
