@@ -39,11 +39,11 @@ class RedisProxiesTest extends TestCase
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
             $methods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, true, $args)."\n".<<<EOPHP
-                {
-                    {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
-                }
+                    {
+                        {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
+                    }
 
-            EOPHP;
+                EOPHP;
         }
 
         uksort($methods, 'strnatcmp');
@@ -57,11 +57,11 @@ class RedisProxiesTest extends TestCase
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
             $methods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, false, $args)."\n".<<<EOPHP
-                {
-                    {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
-                }
+                    {
+                        {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
+                    }
 
-            EOPHP;
+                EOPHP;
         }
 
         uksort($methods, 'strnatcmp');
@@ -93,11 +93,11 @@ class RedisProxiesTest extends TestCase
 
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
             $expectedMethods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, true, $args)."\n".<<<EOPHP
-                {
-                    {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
-                }
+                    {
+                        {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
+                    }
 
-            EOPHP;
+                EOPHP;
         }
 
         foreach ((new \ReflectionClass(Relay::class))->getMethods() as $method) {
@@ -106,11 +106,11 @@ class RedisProxiesTest extends TestCase
             }
             $return = '__construct' === $method->name || $method->getReturnType() instanceof \ReflectionNamedType && 'void' === (string) $method->getReturnType() ? '' : 'return ';
             $methods[$method->name] = "\n    ".ProxyHelper::exportSignature($method, false, $args)."\n".<<<EOPHP
-                {
-                    {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
-                }
+                    {
+                        {$return}(\$this->lazyObjectState->realInstance ??= (\$this->lazyObjectState->initializer)())->{$method->name}({$args});
+                    }
 
-            EOPHP;
+                EOPHP;
         }
 
         uksort($methods, 'strnatcmp');
