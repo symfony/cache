@@ -101,7 +101,7 @@ trait RedisTrait
         }
 
         $auth = null;
-        $params = preg_replace_callback('#^'.$scheme.':(//)?(?:(?:(?<user>[^:@]*+):)?(?<password>[^@]*+)@)?#', function ($m) use (&$auth) {
+        $params = preg_replace_callback('#^'.$scheme.':(//)?(?:(?:(?<user>[^:@]*+):)?(?<password>[^@]*+)@)?#', static function ($m) use (&$auth) {
             if (isset($m['password'])) {
                 if (\in_array($m['user'], ['', 'default'], true)) {
                     $auth = rawurldecode($m['password']);
@@ -295,7 +295,7 @@ trait RedisTrait
                     }
                     @$redis->{$connect}($host, $port, (float) $params['timeout'], (string) $params['persistent_id'], $params['retry_interval'], $params['read_timeout'], ...\defined('Redis::SCAN_PREFIX') || !$isRedisExt ? [$extra] : []);
 
-                    set_error_handler(function ($type, $msg) use (&$error) { $error = $msg; });
+                    set_error_handler(static function ($type, $msg) use (&$error) { $error = $msg; });
                     try {
                         $isConnected = $redis->isConnected();
                     } finally {
@@ -438,7 +438,7 @@ trait RedisTrait
         $result = [];
 
         if (($this->redis instanceof \Predis\ClientInterface && ($this->redis->getConnection() instanceof ClusterInterface || $this->redis->getConnection() instanceof Predis2ClusterInterface)) || $this->redis instanceof RelayCluster) {
-            $values = $this->pipeline(function () use ($ids) {
+            $values = $this->pipeline(static function () use ($ids) {
                 foreach ($ids as $id) {
                     yield 'get' => [$id];
                 }
@@ -548,7 +548,7 @@ trait RedisTrait
             static $del;
             $del ??= (class_exists(UNLINK::class) ? 'unlink' : 'del');
 
-            $this->pipeline(function () use ($ids, $del) {
+            $this->pipeline(static function () use ($ids, $del) {
                 foreach ($ids as $id) {
                     yield $del => [$id];
                 }
@@ -578,7 +578,7 @@ trait RedisTrait
             return $failed;
         }
 
-        $results = $this->pipeline(function () use ($values, $lifetime) {
+        $results = $this->pipeline(static function () use ($values, $lifetime) {
             foreach ($values as $id => $value) {
                 if (0 >= $lifetime) {
                     yield 'set' => [$id, $value];
@@ -647,7 +647,7 @@ trait RedisTrait
 
         if (!$redis instanceof \Predis\ClientInterface && 'eval' === $command && $redis->getLastError()) {
             $e = $redis instanceof Relay ? new \Relay\Exception($redis->getLastError()) : new \RedisException($redis->getLastError());
-            $results = array_map(fn ($v) => false === $v ? $e : $v, (array) $results);
+            $results = array_map(static fn ($v) => false === $v ? $e : $v, (array) $results);
         }
 
         if (\is_bool($results)) {

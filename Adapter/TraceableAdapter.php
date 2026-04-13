@@ -42,7 +42,7 @@ class TraceableAdapter implements AdapterInterface, CacheInterface, PruneableInt
         }
 
         $isHit = true;
-        $callback = function (CacheItem $item, bool &$save) use ($callback, &$isHit) {
+        $callback = static function (CacheItem $item, bool &$save) use ($callback, &$isHit) {
             $isHit = $item->isHit();
 
             return $callback($item, $save);
@@ -129,7 +129,7 @@ class TraceableAdapter implements AdapterInterface, CacheInterface, PruneableInt
         } finally {
             $event->end = microtime(true);
         }
-        $f = function () use ($result, $event) {
+        $f = static function () use ($result, $event) {
             $event->result = [];
             foreach ($result as $key => $item) {
                 if ($event->result[$key] = $item->isHit()) {

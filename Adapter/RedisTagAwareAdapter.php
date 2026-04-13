@@ -266,7 +266,7 @@ class RedisTagAwareAdapter extends AbstractTagAwareAdapter
                     $evalArgs = [$lua, $evalArgs, 1];
                 }
 
-                $results = $this->pipeline(function () use ($evalArgs) {
+                $results = $this->pipeline(static function () use ($evalArgs) {
                     yield 'eval' => $evalArgs;
                 });
 

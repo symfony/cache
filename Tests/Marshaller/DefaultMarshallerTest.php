@@ -21,7 +21,7 @@ class DefaultMarshallerTest extends TestCase
         $marshaller = new DefaultMarshaller();
         $values = [
             'a' => 123,
-            'b' => function () {},
+            'b' => static function () {},
         ];
 
         $expected = ['a' => \extension_loaded('igbinary') && (version_compare('3.1.6', phpversion('igbinary'), '<=')) ? igbinary_serialize(123) : serialize(123)];
@@ -113,7 +113,7 @@ class DefaultMarshallerTest extends TestCase
     {
         $marshaller = new DefaultMarshaller(false, true);
         $values = [
-            'a' => function () {},
+            'a' => static function () {},
         ];
 
         $this->expectException(\ValueError::class);
