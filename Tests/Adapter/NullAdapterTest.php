@@ -38,7 +38,7 @@ class NullAdapterTest extends TestCase
         $adapter = $this->createCachePool();
 
         $fetched = [];
-        $adapter->get('myKey', function ($item) use (&$fetched) { $fetched[] = $item; });
+        $adapter->get('myKey', static function ($item) use (&$fetched) { $fetched[] = $item; });
         $this->assertCount(1, $fetched);
         $item = $fetched[0];
         $this->assertFalse($item->isHit());
