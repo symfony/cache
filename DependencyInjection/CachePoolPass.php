@@ -127,7 +127,14 @@ class CachePoolPass implements CompilerPassInterface
                     }
 
                     if (isset($tags[0]['default_lifetime'])) {
-                        $chainedPool->replaceArgument($i++, $tags[0]['default_lifetime']);
+                        $defaultLifetime = $tags[0]['default_lifetime'];
+
+                        if (!is_numeric($defaultLifetime)) {
+                            $defaultLifetime = (new Definition('int', [$defaultLifetime]))
+                                ->setFactory([ParameterNormalizer::class, 'normalizeDuration']);
+                        }
+
+                        $chainedPool->replaceArgument($i++, $defaultLifetime);
                     }
 
                     $adapters[] = $chainedPool;
