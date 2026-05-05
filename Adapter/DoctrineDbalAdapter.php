@@ -72,6 +72,10 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         array $options = [],
         ?MarshallerInterface $marshaller = null,
     ) {
+        if (!class_exists(PrimaryKeyConstraint::class)) {
+            throw new \LogicException(\sprintf('Using "%s" requires "doctrine/dbal" 4.3 or higher; try running "composer require doctrine/dbal:^4.3".', __CLASS__));
+        }
+
         if (isset($namespace[0]) && preg_match('#[^-+.A-Za-z0-9]#', $namespace, $match)) {
             throw new InvalidArgumentException(\sprintf('Namespace contains "%s" but only characters in [-+.A-Za-z0-9] are allowed.', $match[0]));
         }
