@@ -199,7 +199,7 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
         return $this->initializeLazyObject()->close(...\func_get_args());
     }
 
-    public function cmsIncrBy($key, $field, $value, ...$fields_and_falues): \Relay\Relay|array|false
+    public function cmsIncrBy($key, $field, $value, ...$fields_and_values): \Relay\Relay|array|false
     {
         return $this->initializeLazyObject()->cmsIncrBy(...\func_get_args());
     }
