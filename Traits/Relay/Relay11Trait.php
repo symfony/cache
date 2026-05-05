@@ -17,7 +17,7 @@ if (version_compare(phpversion('relay'), '0.11.0', '>=')) {
      */
     trait Relay11Trait
     {
-        public function cmsIncrBy($key, $field, $value, ...$fields_and_falues): \Relay\Relay|array|false
+        public function cmsIncrBy($key, $field, $value, ...$fields_and_values): \Relay\Relay|array|false
         {
             return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->cmsIncrBy(...\func_get_args());
         }
