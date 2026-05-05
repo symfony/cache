@@ -17,7 +17,7 @@ if (version_compare(phpversion('relay'), '0.21.0', '>=')) {
      */
     trait Relay21Trait
     {
-        public function gcra($key, $maxBurst, $requestsPerPeriod, $period, $numRequests = 0): \Relay\Relay|array|false
+        public function gcra($key, $maxBurst, $requestsPerPeriod, $period, $tokens = 0): \Relay\Relay|array|false
         {
             return $this->initializeLazyObject()->gcra(...\func_get_args());
         }
