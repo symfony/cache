@@ -22,7 +22,7 @@ if (version_compare(phpversion('relay'), '0.21.0', '>=')) {
             return $this->initializeLazyObject()->clusterscan($iterator, ...\array_slice(\func_get_args(), 1));
         }
 
-        public function gcra($key, $maxBurst, $requestsPerPeriod, $period, $numRequests = 0): \Relay\Cluster|array|false
+        public function gcra($key, $maxBurst, $requestsPerPeriod, $period, $tokens = 0): \Relay\Cluster|array|false
         {
             return $this->initializeLazyObject()->gcra(...\func_get_args());
         }
