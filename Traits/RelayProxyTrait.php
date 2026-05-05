@@ -117,11 +117,6 @@ if (version_compare(phpversion('relay'), '0.8.1', '>=')) {
             return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->jsonSet(...\func_get_args());
         }
 
-        public function jsonStrAppend($key, $value, $path = null): \Relay\Relay|array|false
-        {
-            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->jsonStrAppend(...\func_get_args());
-        }
-
         public function jsonStrLen($key, $path = null): \Relay\Relay|array|false
         {
             return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->jsonStrLen(...\func_get_args());
