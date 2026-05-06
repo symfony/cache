@@ -26,6 +26,7 @@ class MemcachedAdapterTest extends AdapterTestCase
         'testHasItemReturnsFalseWhenDeferredItemIsExpired' => 'Testing expiration slows down the test suite',
         'testDefaultLifeTime' => 'Testing expiration slows down the test suite',
         'testClearPrefix' => 'Memcached cannot clear by prefix',
+        'testClearWithInvalidPrefix' => 'Memcached cannot clear by prefix',
     ];
 
     protected static $client;

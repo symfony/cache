@@ -309,6 +309,34 @@ abstract class AdapterTestCase extends CachePoolTest
         $this->assertTrue($cache->hasItem('barfoo'));
     }
 
+    /**
+     * @dataProvider provideInvalidPrefixes
+     */
+    public function testClearWithInvalidPrefix(string $prefix)
+    {
+        if (isset($this->skippedTests[__FUNCTION__])) {
+            $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
+        }
+
+        $cache = $this->createCachePool(0, __FUNCTION__);
+        $cache->clear();
+
+        $cache->save($cache->getItem('foobar')->set(1));
+
+        $this->assertFalse($cache->clear($prefix));
+        $this->assertTrue($cache->hasItem('foobar'));
+    }
+
+    public static function provideInvalidPrefixes(): iterable
+    {
+        yield 'single quote' => ["foo' OR 1=1; --"];
+        yield 'percent wildcard' => ['foo%'];
+        yield 'space' => ['foo bar'];
+        yield 'null byte' => ["foo\0bar"];
+        yield 'backslash' => ['foo\\bar'];
+        yield 'slash' => ['foo/bar'];
+    }
+
     public function testWeirdDataMatchingMetadataWrappedValues()
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
