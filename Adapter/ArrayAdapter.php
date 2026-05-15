@@ -184,9 +184,20 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
         }
         if ($this->storeSerialized) {
             try {
-                $value = $this->freeze($value, $key);
-            } catch (\ValueError) {
+                $cloner = new DeepCloner($value);
+            } catch (\Exception $e) {
+                if (!isset($this->expiries[$key])) {
+                    unset($this->values[$key]);
+                }
+                $type = get_debug_type($value);
+                $message = \sprintf('Failed to save key "{key}" of type %s: %s', $type, $e->getMessage());
+                CacheItem::log($this->logger, $message, ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
+
                 return false;
+            }
+
+            if (!$cloner->isStaticValue()) {
+                $value = $cloner;
             }
         }
         if (null === $expiry && 0 < $this->defaultLifetime) {
@@ -338,27 +349,6 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
         foreach ($keys as $key) {
             yield $key => $f($key, null, false);
         }
-    }
-
-    /**
-     * @throws \ValueError When the value cannot be frozen
-     */
-    private function freeze(mixed $value, string $key): mixed
-    {
-        try {
-            $cloner = new DeepCloner($value);
-        } catch (\Exception $e) {
-            if (!isset($this->expiries[$key])) {
-                unset($this->values[$key]);
-            }
-            $type = get_debug_type($value);
-            $message = \sprintf('Failed to save key "{key}" of type %s: %s', $type, $e->getMessage());
-            CacheItem::log($this->logger, $message, ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
-
-            throw new \ValueError();
-        }
-
-        return $cloner->isStaticValue() ? $value : $cloner;
     }
 
     private function unfreeze(string $key, bool &$isHit): mixed
