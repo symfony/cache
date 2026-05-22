@@ -26,6 +26,7 @@ class DoctrineAdapterTest extends AdapterTestCase
         'testSaveWithoutExpire' => 'Assumes a shared cache which ArrayCache is not.',
         'testNotUnserializable' => 'ArrayCache does not use serialize/unserialize',
         'testClearPrefix' => 'Doctrine cannot clear by prefix',
+        'testClearPrefixWithUnderscore' => 'Doctrine cannot clear by prefix',
     ];
 
     public function createCachePool(int $defaultLifetime = 0): CacheItemPoolInterface

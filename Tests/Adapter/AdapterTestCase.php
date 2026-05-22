@@ -309,6 +309,23 @@ abstract class AdapterTestCase extends CachePoolTest
         $this->assertTrue($cache->hasItem('barfoo'));
     }
 
+    public function testClearPrefixWithUnderscore()
+    {
+        if (isset($this->skippedTests[__FUNCTION__])) {
+            $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
+        }
+
+        $cache = $this->createCachePool(0, __FUNCTION__);
+        $cache->clear();
+
+        $cache->save($cache->getItem('DC2_REGION_product_region_key')->set(1));
+        $cache->save($cache->getItem('other_key')->set(2));
+
+        $this->assertTrue($cache->clear('DC2_REGION_'));
+        $this->assertFalse($cache->hasItem('DC2_REGION_product_region_key'));
+        $this->assertTrue($cache->hasItem('other_key'));
+    }
+
     /**
      * @dataProvider provideInvalidPrefixes
      */
