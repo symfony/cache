@@ -389,10 +389,8 @@ trait RedisTrait
 
                     foreach ($context as $name => $value) {
                         match ($name) {
-                            'use-cache', 'client-tracking', 'throw-on-error', 'client-invalidations', 'reply-literal', 'persistent',
-                                => $context[$name] = filter_var($value, \FILTER_VALIDATE_BOOLEAN),
-                            'max-retries', 'serializer', 'compression', 'compression-level',
-                                => $context[$name] = filter_var($value, \FILTER_VALIDATE_INT),
+                            'use-cache', 'client-tracking', 'throw-on-error', 'client-invalidations', 'reply-literal', 'persistent', => $context[$name] = filter_var($value, \FILTER_VALIDATE_BOOLEAN),
+                            'max-retries', 'serializer', 'compression', 'compression-level', => $context[$name] = filter_var($value, \FILTER_VALIDATE_INT),
                             default => null,
                         };
                     }
@@ -574,7 +572,7 @@ trait RedisTrait
 
         if ($this->redis instanceof RelayCluster) {
             $prefix = Relay::SCAN_PREFIX & $this->redis->getOption(Relay::OPT_SCAN) ? '' : $this->redis->getOption(Relay::OPT_PREFIX);
-            $prefixLen = \strlen($prefix);
+            $prefixLen = \strlen($prefix ?? '');
             $pattern = $prefix.$namespace.'*';
             foreach ($this->redis->_masters() as $ipAndPort) {
                 $address = implode(':', $ipAndPort);
@@ -815,8 +813,7 @@ trait RedisTrait
     {
         foreach ($options as $name => $value) {
             match ($name) {
-                'allow_self_signed', 'capture_peer_cert', 'capture_peer_cert_chain', 'disable_compression', 'SNI_enabled', 'verify_peer', 'verify_peer_name',
-                    => $options[$name] = filter_var($value, \FILTER_VALIDATE_BOOLEAN),
+                'allow_self_signed', 'capture_peer_cert', 'capture_peer_cert_chain', 'disable_compression', 'SNI_enabled', 'verify_peer', 'verify_peer_name', => $options[$name] = filter_var($value, \FILTER_VALIDATE_BOOLEAN),
                 default => null,
             };
         }
