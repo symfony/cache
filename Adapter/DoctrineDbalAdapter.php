@@ -214,7 +214,8 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         if ('' === $namespace) {
             $sql = $this->conn->getDatabasePlatform()->getTruncateTableSQL($this->table);
         } else {
-            $sql = "DELETE FROM $this->table WHERE $this->idCol LIKE '$namespace%'";
+            $namespace = str_replace('_', '!_', $namespace);
+            $sql = "DELETE FROM $this->table WHERE $this->idCol LIKE '$namespace%' ESCAPE '!'";
         }
 
         try {
