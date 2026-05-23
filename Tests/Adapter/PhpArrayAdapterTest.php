@@ -80,7 +80,7 @@ class PhpArrayAdapterTest extends AdapterTestCase
 
     public function createCachePool(int $defaultLifetime = 0, ?string $testMethod = null): CacheItemPoolInterface
     {
-        if ('testGetMetadata' === $testMethod || 'testClearPrefix' === $testMethod) {
+        if ('testGetMetadata' === $testMethod || 'testClearPrefix' === $testMethod || 'testClearPrefixWithUnderscore' === $testMethod) {
             return new PhpArrayAdapter(self::$file, new FilesystemAdapter());
         }
 
