@@ -30,6 +30,7 @@ class CouchbaseBucketAdapterTest extends AdapterTestCase
 {
     protected $skippedTests = [
         'testClearPrefix' => 'Couchbase cannot clear by prefix',
+        'testClearPrefixWithUnderscore' => 'Couchbase cannot clear by prefix',
         'testClearWithInvalidPrefix' => 'Couchbase cannot clear by prefix',
     ];
 
