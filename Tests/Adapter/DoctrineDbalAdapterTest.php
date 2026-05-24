@@ -22,12 +22,15 @@ use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
 
 #[RequiresPhpExtension('pdo_sqlite')]
 #[Group('time-sensitive')]
+#[IgnoreDeprecations]
+#[Group('doctrine-dbal-workaround')]
 class DoctrineDbalAdapterTest extends AdapterTestCase
 {
     protected static string $dbFile;
