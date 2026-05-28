@@ -28,6 +28,7 @@ use Doctrine\DBAL\Schema\Name\Identifier;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Tools\DsnParser;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 use Symfony\Component\Cache\Marshaller\DefaultMarshaller;
@@ -125,25 +126,27 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
      */
     public function createTable(): void
     {
-        $schema = new Schema();
-        $this->addTableToSchema($schema);
+        $schema = $this->addTableToSchema(new Schema());
 
         foreach ($schema->toSql($this->conn->getDatabasePlatform()) as $sql) {
             $this->conn->executeStatement($sql);
         }
     }
 
-    public function configureSchema(Schema $schema, Connection $forConnection, \Closure $isSameDatabase): void
+    /**
+     * @return Schema The (possibly new) schema with the table added
+     */
+    public function configureSchema(Schema $schema, Connection $forConnection, \Closure $isSameDatabase)
     {
         if ($schema->hasTable($this->table)) {
-            return;
+            return $schema;
         }
 
         if ($forConnection !== $this->conn && !$isSameDatabase($this->conn->executeStatement(...))) {
-            return;
+            return $schema;
         }
 
-        $this->addTableToSchema($schema);
+        return $this->addTableToSchema($schema);
     }
 
     public function prune(): bool
@@ -401,14 +404,27 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         };
     }
 
-    private function addTableToSchema(Schema $schema): void
+    private function addTableToSchema(Schema $schema): Schema
+    {
+        if (method_exists($schema, 'edit')) {
+            $table = new Table($this->table);
+            $this->configureSchemaTable($table);
+
+            return $schema->edit()->addTable($table)->create();
+        }
+
+        $this->configureSchemaTable($schema->createTable($this->table));
+
+        return $schema;
+    }
+
+    private function configureSchemaTable(Table $table): void
     {
         $types = [
             'mysql' => 'binary',
             'sqlite' => 'text',
         ];
 
-        $table = $schema->createTable($this->table);
         $table->addColumn($this->idCol, $types[$this->getPlatformName()] ?? 'string', ['length' => 255]);
         $table->addColumn($this->dataCol, 'blob', ['length' => 16777215]);
         $table->addColumn($this->lifetimeCol, 'integer', ['unsigned' => true, 'notnull' => false]);
