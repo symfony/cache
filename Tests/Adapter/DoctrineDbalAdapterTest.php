@@ -22,15 +22,12 @@ use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
 
 #[RequiresPhpExtension('pdo_sqlite')]
 #[Group('time-sensitive')]
-#[IgnoreDeprecations]
-#[Group('doctrine-dbal-workaround')]
 class DoctrineDbalAdapterTest extends AdapterTestCase
 {
     protected static string $dbFile;
@@ -86,10 +83,9 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
 
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
-        $schema = new Schema();
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, static fn () => true);
+        $schema = $adapter->configureSchema(new Schema(), $connection, static fn () => true);
         $this->assertTrue($schema->hasTable('cache_items'));
     }
 
@@ -100,10 +96,9 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
 
         $otherConnection = $this->createConnection();
-        $schema = new Schema();
 
         $adapter = $this->createCachePool();
-        $adapter->configureSchema($schema, $otherConnection, static fn () => false);
+        $schema = $adapter->configureSchema(new Schema(), $otherConnection, static fn () => false);
         $this->assertFalse($schema->hasTable('cache_items'));
     }
 
@@ -114,11 +109,15 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
 
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
-        $schema = new Schema();
-        $schema->createTable('cache_items');
+        if (method_exists(Schema::class, 'edit')) {
+            $schema = (new Schema())->edit()->addTable(new \Doctrine\DBAL\Schema\Table('cache_items'))->create();
+        } else {
+            $schema = new Schema();
+            $schema->createTable('cache_items');
+        }
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, static fn () => true);
+        $schema = $adapter->configureSchema($schema, $connection, static fn () => true);
         $table = $schema->getTable('cache_items');
         $this->assertSame([], $table->getColumns(), 'The table was not overwritten');
     }
