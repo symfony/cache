@@ -133,10 +133,7 @@ class DoctrineDbalAdapter extends AbstractAdapter implements PruneableInterface
         }
     }
 
-    /**
-     * @return Schema The (possibly new) schema with the table added
-     */
-    public function configureSchema(Schema $schema, Connection $forConnection, \Closure $isSameDatabase)
+    public function configureSchema(Schema $schema, Connection $forConnection, \Closure $isSameDatabase): Schema
     {
         if ($schema->hasTable($this->table)) {
             return $schema;
