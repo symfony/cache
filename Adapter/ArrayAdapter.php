@@ -347,7 +347,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, LoggerAwareInter
         }
         if (\is_string($value) && isset($value[2]) && ':' === $value[1]) {
             try {
-                $value = unserialize($value);
+                $value = unserialize($value, ['allowed_classes' => true]);
             } catch (\Exception $e) {
                 CacheItem::log($this->logger, 'Failed to unserialize key "{key}": '.$e->getMessage(), ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
                 $value = false;
