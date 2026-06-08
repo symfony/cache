@@ -42,11 +42,11 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
     private static \Closure $createCacheItem;
 
     /**
-     * @param bool $storeSerialized Disabling serialization can lead to cache corruptions when storing mutable values but increases performance otherwise
+     * @param bool $deepClone Disabling deep-cloning can lead to cache corruptions when storing mutable values but increases performance otherwise
      */
     public function __construct(
         private int $defaultLifetime = 0,
-        private bool $storeSerialized = true,
+        private bool $deepClone = true,
         private float $maxLifetime = 0,
         private int $maxItems = 0,
         private ?ClockInterface $clock = null,
@@ -131,7 +131,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
                 $this->values[$key] = null;
             }
         } else {
-            $value = $this->storeSerialized ? $this->unfreeze($key, $isHit) : $this->values[$key];
+            $value = $this->deepClone ? $this->unfreeze($key, $isHit) : $this->values[$key];
         }
 
         return (self::$createCacheItem)($key, $value, $isHit, $this->tags[$key] ?? null, $this->explicitExpiries[$key] ?? null);
@@ -182,7 +182,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
                 return true;
             }
         }
-        if ($this->storeSerialized) {
+        if ($this->deepClone) {
             try {
                 $cloner = new DeepCloner($value);
             } catch (\Exception $e) {
@@ -196,7 +196,10 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
                 return false;
             }
 
-            if (!$cloner->isStaticValue()) {
+            // keep static values unwrapped for performance, except null (which must
+            // stay distinguishable from a cache miss) and strings holding a colon
+            // (which getValues() consumers must not confuse with a serialized value)
+            if (!$cloner->isStaticValue() || null === $value || (\is_string($value) && str_contains($value, ':'))) {
                 $value = $cloner;
             }
         }
@@ -291,10 +294,14 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
 
     /**
      * Returns all cached values, with cache miss as null.
+     *
+     * @param bool $raw Whether to return the raw stored values (DeepCloner instances and unwrapped scalars) instead of serialized strings
      */
-    public function getValues(): array
+    public function getValues(/* bool $raw = false */): array
     {
-        if (!$this->storeSerialized) {
+        $raw = \func_num_args() ? func_get_arg(0) : false;
+
+        if (!$this->deepClone || $raw) {
             return $this->values;
         }
 
@@ -303,7 +310,12 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
             if (null === $v) {
                 continue;
             }
-            $values[$k] = serialize($v instanceof DeepCloner ? $v->clone() : $v);
+            try {
+                $values[$k] = serialize($v instanceof DeepCloner ? $v->clone() : $v);
+            } catch (\Exception) {
+                // skip values that cannot be serialized, e.g. when they hold a Closure
+                unset($values[$k]);
+            }
         }
 
         return $values;
@@ -339,7 +351,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
                     $this->values[$key] = $value;
                 }
 
-                $value = $this->storeSerialized ? $this->unfreeze($key, $isHit) : $this->values[$key];
+                $value = $this->deepClone ? $this->unfreeze($key, $isHit) : $this->values[$key];
             }
             unset($keys[$i]);
 
