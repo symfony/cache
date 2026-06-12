@@ -78,7 +78,7 @@ class ArrayAdapterTest extends AdapterTestCase
 
         $raw = $cache->getValues(true);
         $this->assertInstanceOf(DeepCloner::class, $raw['foo']);
-        $this->assertInstanceOf(\Closure::class, $raw['foo']->clone()[0]);
+        $this->assertInstanceOf(\Closure::class, $raw['foo']->clone(null, true)[0]);
     }
 
     public function testGetValuesDistinguishesRecordedNullFromMiss()

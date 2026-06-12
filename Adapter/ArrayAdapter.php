@@ -184,7 +184,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
         }
         if ($this->deepClone) {
             try {
-                $cloner = new DeepCloner($value);
+                $cloner = new DeepCloner($value, null, true);
             } catch (\Exception $e) {
                 if (!isset($this->expiries[$key])) {
                     unset($this->values[$key]);
@@ -311,7 +311,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
                 continue;
             }
             try {
-                $values[$k] = serialize($v instanceof DeepCloner ? $v->clone() : $v);
+                $values[$k] = serialize($v instanceof DeepCloner ? $v->clone(null, true) : $v);
             } catch (\Exception) {
                 // skip values that cannot be serialized, e.g. when they hold a Closure
                 unset($values[$k]);
@@ -369,7 +369,7 @@ class ArrayAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
 
         if ($value instanceof DeepCloner) {
             try {
-                return $value->clone();
+                return $value->clone(null, true);
             } catch (\Exception $e) {
                 CacheItem::log($this->logger, 'Failed to clone key "{key}": '.$e->getMessage(), ['key' => $key, 'exception' => $e, 'cache-adapter' => get_debug_type($this)]);
                 $isHit = false;
