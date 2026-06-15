@@ -19,6 +19,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\Table;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
 use Symfony\Component\Cache\Tests\Fixtures\DriverWrapper;
@@ -83,10 +84,9 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
 
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
-        $schema = new Schema();
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, static fn () => true);
+        $schema = $adapter->configureSchema(new Schema(), $connection, static fn () => true);
         $this->assertTrue($schema->hasTable('cache_items'));
     }
 
@@ -97,10 +97,9 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
 
         $otherConnection = $this->createConnection();
-        $schema = new Schema();
 
         $adapter = $this->createCachePool();
-        $adapter->configureSchema($schema, $otherConnection, static fn () => false);
+        $schema = $adapter->configureSchema(new Schema(), $otherConnection, static fn () => false);
         $this->assertFalse($schema->hasTable('cache_items'));
     }
 
@@ -111,13 +110,17 @@ class DoctrineDbalAdapterTest extends AdapterTestCase
         }
 
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => self::$dbFile], $this->getDbalConfig());
-        $schema = new Schema();
-        $schema->createTable('cache_items');
+        if (method_exists(Schema::class, 'edit')) {
+            $schema = (new Schema())->edit()->addTable(new Table('cache_items'))->create();
+        } else {
+            $schema = new Schema();
+            $schema->createTable('cache_items');
+        }
 
         $adapter = new DoctrineDbalAdapter($connection);
-        $adapter->configureSchema($schema, $connection, static fn () => true);
+        $schema = $adapter->configureSchema($schema, $connection, static fn () => true);
         $table = $schema->getTable('cache_items');
-        $this->assertEmpty($table->getColumns(), 'The table was not overwritten');
+        $this->assertSame([], $table->getColumns(), 'The table was not overwritten');
     }
 
     /**
