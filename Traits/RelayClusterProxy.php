@@ -13,6 +13,7 @@ namespace Symfony\Component\Cache\Traits;
 
 use Symfony\Component\Cache\Traits\Relay\RelayCluster20Trait;
 use Symfony\Component\Cache\Traits\Relay\RelayCluster21Trait;
+use Symfony\Component\Cache\Traits\Relay\RelayCluster30Trait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -31,6 +32,7 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
     }
     use RelayCluster20Trait;
     use RelayCluster21Trait;
+    use RelayCluster30Trait;
 
     public function __construct($name, $seeds = null, $connect_timeout = 0, $command_timeout = 0, $persistent = false, #[\SensitiveParameter] $auth = null, $context = null)
     {
@@ -1082,7 +1084,7 @@ class RelayClusterProxy extends \Relay\Cluster implements ResetInterface, LazyOb
         return $this->initializeLazyObject()->vrandmember(...\func_get_args());
     }
 
-    public function vrange($key, $end, $start, $count = -1): \Relay\Cluster|array|bool
+    public function vrange($key, $min, $max, $count = -1): \Relay\Cluster|array|false
     {
         return $this->initializeLazyObject()->vrange(...\func_get_args());
     }
