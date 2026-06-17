@@ -14,6 +14,7 @@ namespace Symfony\Component\Cache\Traits;
 use Symfony\Component\Cache\Traits\Relay\Relay20Trait;
 use Symfony\Component\Cache\Traits\Relay\Relay21Trait;
 use Symfony\Component\Cache\Traits\Relay\Relay22Trait;
+use Symfony\Component\Cache\Traits\Relay\Relay30Trait;
 use Symfony\Component\VarExporter\LazyObjectInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -32,6 +33,7 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     use Relay20Trait;
     use Relay21Trait;
     use Relay22Trait;
+    use Relay30Trait;
 
     public function __construct($host = null, $port = 6379, $connect_timeout = 0.0, $command_timeout = 0.0, #[\SensitiveParameter] $context = [], $database = 0)
     {
@@ -1421,11 +1423,6 @@ class RelayProxy extends \Relay\Relay implements ResetInterface, LazyObjectInter
     public function unsubscribe($channels = []): bool
     {
         return $this->initializeLazyObject()->unsubscribe(...\func_get_args());
-    }
-
-    public function unwatch(): \Relay\Relay|bool
-    {
-        return $this->initializeLazyObject()->unwatch(...\func_get_args());
     }
 
     public function vadd($key, $values, $element, $options = null): \Relay\Relay|false|int
