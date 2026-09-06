@@ -27,7 +27,7 @@ if (version_compare(phpversion('relay'), '0.50.0', '>=')) {
             return $this->initializeLazyObject()->fcall_ro(...\func_get_args());
         }
 
-        public function himport($op, $hash = null, $fieldset = null, $fields = []): \Relay\Cluster|bool|int
+        public function himport($op, $hash, $fieldset = null, $fields = []): \Relay\Cluster|bool|int
         {
             return $this->initializeLazyObject()->himport(...\func_get_args());
         }
