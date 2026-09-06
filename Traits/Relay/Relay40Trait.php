@@ -11,7 +11,33 @@
 
 namespace Symfony\Component\Cache\Traits\Relay;
 
-if (version_compare(phpversion('relay'), '0.40.0', '>=')) {
+if (version_compare(phpversion('relay'), '0.50.0', '>=')) {
+    /**
+     * @internal
+     */
+    trait Relay40Trait
+    {
+        public function blmovem($srckey, $dstkey, $srcpos, $dstpos, $timeout, $options = null): \Relay\Relay|array|false|null
+        {
+            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->blmovem(...\func_get_args());
+        }
+
+        public function lmovem($srckey, $dstkey, $srcpos, $dstpos, $options = null): \Relay\Relay|array|false|null
+        {
+            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->lmovem(...\func_get_args());
+        }
+
+        public function sdiffcard($keys, $options = null): \Relay\Relay|false|int
+        {
+            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->sdiffcard(...\func_get_args());
+        }
+
+        public function sunioncard($keys, $options = null): \Relay\Relay|false|int
+        {
+            return ($this->lazyObjectState->realInstance ??= ($this->lazyObjectState->initializer)())->sunioncard(...\func_get_args());
+        }
+    }
+} elseif (version_compare(phpversion('relay'), '0.40.0', '>=')) {
     /**
      * @internal
      */
